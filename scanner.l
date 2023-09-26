@@ -17,18 +17,15 @@ int yyline = 1;
 
 "fn" { return FN; }
 
-"let" { return let; }
-"mut" { return mut; }
+"let" { return LET; }
+"mut" { return MUT; }
 "true" { return number; }
 "false" { return number; }
 "if" { return IF; }
 "else" { return ELSE; }
 "while" { return WHILE; }
 
-"println!" { return println; }
-"read_line" { return readln; }
-
-"!" { return not; }
+"!" { return '!'; }
 "&&" { return and; }
 "||" { return or; }
 "==" { return eqt; }
@@ -37,22 +34,33 @@ int yyline = 1;
 ">" { return grt; }
 "<=" { return leq; }
 ">=" { return geq; }
-"=" { return equal; }
+"=" { return '='; }
 "{" { return '{'; }
 "}" { return '}'; }
 "(" { return '('; }
 ")" { return ')'; }
 ";" { return ';'; }
 
-"+" { return plus; }
-"-" { return minus; }
-"*" { return mult; }
-"/" { return divi; }
-"%" { return mod; }
+"+" { return '+'; }
+"-" { return '-'; }
+"*" { return '*'; }
+"/" { return '/'; }
+"%" { return '%'; }
+
+":" {return ':';}
+"&" {return '&';}
+"->" {return RIGHT_ARROW;}
+
+"const" {return CONST;}
+"return" {return RETURN;}
+
+"break" {return BREAK;}
+"continue" {return CONTINUE;}
 
 
 [0-9]+ { return number; }
-[a-zA-Z][a-zA-Z0-9]* {  return symbol; }
+[a-zA-Z_][a-zA-Z_0-9]* {  return ident; }
+ [a-zA-Z_][a-zA-Z_0-9]*! { return macro_ident; }
 \".*\" { return string; }
 
 

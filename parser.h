@@ -40,7 +40,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 3 "parser.bison" /* yacc.c:1909  */
+#line 1 "parser.y" /* yacc.c:1909  */
 
     #include <stdio.h>
     #include <stdlib.h>
@@ -59,35 +59,33 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    fn = 258,
-    fmain = 259,
-    let = 260,
-    mut = 261,
-    IF = 262,
-    ELSE = 263,
-    WHILE = 264,
-    println = 265,
-    readln = 266,
-    number = 267,
-    symbol = 268,
-    string = 269,
-    plus = 270,
-    minus = 271,
-    mult = 272,
-    divi = 273,
-    mod = 274,
-    not = 275,
-    and = 276,
-    or = 277,
-    eqt = 278,
-    grt = 279,
-    geq = 280,
-    lrt = 281,
-    leq = 282,
-    neq = 283,
-    equal = 284,
-    commentline = 285,
-    quote = 286
+    FN = 258,
+    LET = 259,
+    MUT = 260,
+    IF = 261,
+    ELSE = 262,
+    WHILE = 263,
+    println = 264,
+    readln = 265,
+    number = 266,
+    ident = 267,
+    string = 268,
+    macro_ident = 269,
+    and = 270,
+    or = 271,
+    eqt = 272,
+    grt = 273,
+    geq = 274,
+    lrt = 275,
+    leq = 276,
+    neq = 277,
+    commentline = 278,
+    quote = 279,
+    RIGHT_ARROW = 280,
+    CONST = 281,
+    RETURN = 282,
+    BREAK = 283,
+    CONTINUE = 284
   };
 #endif
 
@@ -96,12 +94,12 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 36 "parser.bison" /* yacc.c:1909  */
+#line 37 "parser.y" /* yacc.c:1909  */
 
     int number;
     char* string;
 
-#line 105 "parser.h" /* yacc.c:1909  */
+#line 103 "parser.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

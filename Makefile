@@ -5,11 +5,11 @@ CFLAGS=-g -Wall -Wno-unused-function -Wno-unused-variable
 
 all: $(PROGRAM)
 
-scanner.c: scanner.flex parser.h
-	flex -o scanner.c scanner.flex
+scanner.c: scanner.l parser.h
+	flex -o scanner.c scanner.l
 
-parser.c parser.h: parser.bison
-	bison --verbose --defines=parser.h -o parser.c parser.bison
+parser.c parser.h: parser.y
+	bison --verbose --defines=parser.h -o parser.c parser.y
 
 $(PROGRAM): $(OBJS)
 	$(CC) -o $(PROGRAM) $(OBJS) -lm

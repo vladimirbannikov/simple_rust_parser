@@ -1,1393 +1,2167 @@
 Терминалы не используются в грамматике
 
-   not
+   println
+   readln
+   '!'
    quote
+   BREAK
+   CONTINUE
 
 
 Грамматика
 
-    0 $accept: program $end
+    0 $accept: crate $end
 
-    1 program: main
+    1 crate: global_items
+    2      | %empty
 
-    2 main: fn fmain '(' ')' '{' statements '}'
+    3 global_items: global_item
+    4             | global_items global_item
 
-    3 statements: statement statements
-    4           | %empty
+    5 global_item: function
 
-    5 statement: assignment
-    6          | if_statement
-    7          | while_statement
-    8          | io_func
-    9          | comments
+    6 function: FN ident '(' maybe_params ')' maybe_return_type '{' statements '}'
 
-   10 assignment: let symbol equal expr ';'
-   11           | let mut symbol equal expr ';'
-   12           | symbol equal expr ';'
+    7 maybe_params: params
+    8             | %empty
 
-   13 if_statement: IF expr '{' statements '}'
-   14             | IF expr '{' statements '}' ELSE '{' statements '}'
-   15             | IF expr '{' statements '}' ELSE if_statement
+    9 params: param
+   10       | params ',' param
 
-   16 while_statement: WHILE expr '{' statements '}'
+   11 param: pattern ':' func_params_type
 
-   17 io_func: fprintln
-   18        | freadln
+   12 pattern: ident
 
-   19 fprintln: println '(' string ')' ';'
-   20         | println '(' symbol ')' ';'
-   21         | println '(' number ')' ';'
+   13 func_params_type: raw_type
+   14                 | '&' raw_type
+   15                 | '&' MUT raw_type
+   16                 | '*' maybe_mut_or_const raw_type
 
-   22 freadln: readln '(' symbol ')' ';'
-   23        | let symbol equal readln '(' ')' ';'
+   17 maybe_mut_or_const: MUT
+   18                   | CONST
+   19                   | %empty
 
-   24 expr: expr and expr
-   25     | expr or expr
-   26     | expr eqt expr
-   27     | expr neq expr
-   28     | expr grt expr
-   29     | expr geq expr
-   30     | expr lrt expr
-   31     | expr leq expr
-   32     | expr plus expr
-   33     | expr mult expr
-   34     | expr minus expr
-   35     | expr divi expr
-   36     | expr mod expr
-   37     | number
-   38     | minus number
-   39     | symbol
+   20 raw_type: ident
+   21         | array_or_slice
 
-   40 comments: commentline
+   22 array_or_slice: '[' ident ']' '[' ident ';' number ']'
+
+   23 maybe_return_type: RIGHT_ARROW func_return_type
+   24                  | %empty
+
+   25 func_return_type: raw_type
+   26                 | '&' raw_type
+   27                 | '&' MUT raw_type
+
+   28 statements: statement statements
+   29           | %empty
+
+   30 statement: assignment
+   31          | if_statement
+   32          | while_statement
+   33          | comments
+   34          | return_expr
+
+   35 return_expr: RETURN ';'
+   36            | RETURN expr ';'
+
+   37 assignment: LET ident '=' expr ';'
+   38           | LET MUT ident '=' expr ';'
+   39           | ident '=' expr ';'
+
+   40 if_statement: IF expr '{' statements '}'
+   41             | IF expr '{' statements '}' ELSE '{' statements '}'
+   42             | IF expr '{' statements '}' ELSE if_statement
+
+   43 while_statement: WHILE expr '{' statements '}'
+
+   44 expr: expr and expr
+   45     | expr or expr
+   46     | expr eqt expr
+   47     | expr neq expr
+   48     | expr grt expr
+   49     | expr geq expr
+   50     | expr lrt expr
+   51     | expr leq expr
+   52     | expr '+' expr
+   53     | expr '*' expr
+   54     | expr '-' expr
+   55     | expr '/' expr
+   56     | expr '%' expr
+   57     | number
+   58     | '-' number
+   59     | ident
+   60     | string
+   61     | function_call
+   62     | macro_function_call
+
+   63 macro_function_call: macro_ident '(' maybe_args ')'
+
+   64 function_call: ident '(' maybe_args ')'
+
+   65 maybe_args: args
+   66           | %empty
+
+   67 args: arg
+   68     | args ',' arg
+
+   69 arg: expr_for_passing
+   70    | '&' expr_for_passing
+   71    | '&' MUT expr_for_passing
+
+   72 expr_for_passing: non_brackets_expr
+   73                 | '(' only_with_brackets_expr_additional_brackets ')'
+
+   74 non_brackets_expr: number
+   75                  | array_or_slice
+   76                  | ident
+   77                  | function_call
+   78                  | macro_function_call
+   79                  | string
+
+   80 only_with_brackets_expr_additional_brackets: expr
+   81                                            | '(' only_with_brackets_expr_additional_brackets ')'
+
+   82 comments: commentline
 
 
 Терминальные символы с правилами, в которых они появляются
 
 $end (0) 0
-'(' (40) 2 19 20 21 22 23
-')' (41) 2 19 20 21 22 23
-';' (59) 10 11 12 19 20 21 22 23
-'{' (123) 2 13 14 15 16
-'}' (125) 2 13 14 15 16
+'!' (33)
+'%' (37) 56
+'&' (38) 14 15 26 27 70 71
+'(' (40) 6 63 64 73 81
+')' (41) 6 63 64 73 81
+'*' (42) 16 53
+'+' (43) 52
+',' (44) 10 68
+'-' (45) 54 58
+'/' (47) 55
+':' (58) 11
+';' (59) 22 35 36 37 38 39
+'=' (61) 37 38 39
+'[' (91) 22
+']' (93) 22
+'{' (123) 6 40 41 42 43
+'}' (125) 6 40 41 42 43
 error (256)
-fn (258) 2
-fmain (259) 2
-let (260) 10 11 23
-mut (261) 11
-IF (262) 13 14 15
-ELSE (263) 14 15
-WHILE (264) 16
-println (265) 19 20 21
-readln (266) 22 23
-number (267) 21 37 38
-symbol (268) 10 11 12 20 22 23 39
-string (269) 19
-plus (270) 32
-minus (271) 34 38
-mult (272) 33
-divi (273) 35
-mod (274) 36
-not (275)
-and (276) 24
-or (277) 25
-eqt (278) 26
-grt (279) 28
-geq (280) 29
-lrt (281) 30
-leq (282) 31
-neq (283) 27
-equal (284) 10 11 12 23
-commentline (285) 40
-quote (286)
+FN (258) 6
+LET (259) 37 38
+MUT (260) 15 17 27 38 71
+IF (261) 40 41 42
+ELSE (262) 41 42
+WHILE (263) 43
+println (264)
+readln (265)
+number (266) 22 57 58 74
+ident (267) 6 12 20 22 37 38 39 59 64 76
+string (268) 60 79
+macro_ident (269) 63
+and (270) 44
+or (271) 45
+eqt (272) 46
+grt (273) 48
+geq (274) 49
+lrt (275) 50
+leq (276) 51
+neq (277) 47
+commentline (278) 82
+quote (279)
+RIGHT_ARROW (280) 23
+CONST (281) 18
+RETURN (282) 35 36
+BREAK (283)
+CONTINUE (284)
 
 
 Нетерминальные символы с правилами, в которых они появляются
 
-$accept (37)
+$accept (47)
     налево: 0
-program (38)
-    налево: 1, направо: 0
-main (39)
-    налево: 2, направо: 1
-statements (40)
-    налево: 3 4, направо: 2 3 13 14 15 16
-statement (41)
-    налево: 5 6 7 8 9, направо: 3
-assignment (42)
-    налево: 10 11 12, направо: 5
-if_statement (43)
-    налево: 13 14 15, направо: 6 15
-while_statement (44)
-    налево: 16, направо: 7
-io_func (45)
-    налево: 17 18, направо: 8
-fprintln (46)
-    налево: 19 20 21, направо: 17
-freadln (47)
-    налево: 22 23, направо: 18
-expr (48)
-    налево: 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39,
-    направо: 10 11 12 13 14 15 16 24 25 26 27 28 29 30 31 32
-    33 34 35 36
-comments (49)
-    налево: 40, направо: 9
+crate (48)
+    налево: 1 2, направо: 0
+global_items (49)
+    налево: 3 4, направо: 1 4
+global_item (50)
+    налево: 5, направо: 3 4
+function (51)
+    налево: 6, направо: 5
+maybe_params (52)
+    налево: 7 8, направо: 6
+params (53)
+    налево: 9 10, направо: 7 10
+param (54)
+    налево: 11, направо: 9 10
+pattern (55)
+    налево: 12, направо: 11
+func_params_type (56)
+    налево: 13 14 15 16, направо: 11
+maybe_mut_or_const (57)
+    налево: 17 18 19, направо: 16
+raw_type (58)
+    налево: 20 21, направо: 13 14 15 16 25 26 27
+array_or_slice (59)
+    налево: 22, направо: 21 75
+maybe_return_type (60)
+    налево: 23 24, направо: 6
+func_return_type (61)
+    налево: 25 26 27, направо: 23
+statements (62)
+    налево: 28 29, направо: 6 28 40 41 42 43
+statement (63)
+    налево: 30 31 32 33 34, направо: 28
+return_expr (64)
+    налево: 35 36, направо: 34
+assignment (65)
+    налево: 37 38 39, направо: 30
+if_statement (66)
+    налево: 40 41 42, направо: 31 42
+while_statement (67)
+    налево: 43, направо: 32
+expr (68)
+    налево: 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60
+    61 62, направо: 36 37 38 39 40 41 42 43 44 45 46 47 48 49
+    50 51 52 53 54 55 56 80
+macro_function_call (69)
+    налево: 63, направо: 62 78
+function_call (70)
+    налево: 64, направо: 61 77
+maybe_args (71)
+    налево: 65 66, направо: 63 64
+args (72)
+    налево: 67 68, направо: 65 68
+arg (73)
+    налево: 69 70 71, направо: 67 68
+expr_for_passing (74)
+    налево: 72 73, направо: 69 70 71
+non_brackets_expr (75)
+    налево: 74 75 76 77 78 79, направо: 72
+only_with_brackets_expr_additional_brackets (76)
+    налево: 80 81, направо: 73 81
+comments (77)
+    налево: 82, направо: 33
 
 
 Состояние 0
 
-    0 $accept: . program $end
+    0 $accept: . crate $end
 
-    fn  сдвиг, и переход в состояние 1
+    FN  сдвиг, и переход в состояние 1
 
-    program  переход в состояние 2
-    main     переход в состояние 3
+    $default  вывод с использованием правила 2 (crate)
+
+    crate         переход в состояние 2
+    global_items  переход в состояние 3
+    global_item   переход в состояние 4
+    function      переход в состояние 5
 
 
 Состояние 1
 
-    2 main: fn . fmain '(' ')' '{' statements '}'
+    6 function: FN . ident '(' maybe_params ')' maybe_return_type '{' statements '}'
 
-    fmain  сдвиг, и переход в состояние 4
+    ident  сдвиг, и переход в состояние 6
 
 
 Состояние 2
 
-    0 $accept: program . $end
+    0 $accept: crate . $end
 
-    $end  сдвиг, и переход в состояние 5
+    $end  сдвиг, и переход в состояние 7
 
 
 Состояние 3
 
-    1 program: main .
+    1 crate: global_items .
+    4 global_items: global_items . global_item
 
-    $default  вывод с использованием правила 1 (program)
+    FN  сдвиг, и переход в состояние 1
+
+    $default  вывод с использованием правила 1 (crate)
+
+    global_item  переход в состояние 8
+    function     переход в состояние 5
 
 
 Состояние 4
 
-    2 main: fn fmain . '(' ')' '{' statements '}'
+    3 global_items: global_item .
 
-    '('  сдвиг, и переход в состояние 6
+    $default  вывод с использованием правила 3 (global_items)
 
 
 Состояние 5
 
-    0 $accept: program $end .
+    5 global_item: function .
 
-    $default  принять
+    $default  вывод с использованием правила 5 (global_item)
 
 
 Состояние 6
 
-    2 main: fn fmain '(' . ')' '{' statements '}'
+    6 function: FN ident . '(' maybe_params ')' maybe_return_type '{' statements '}'
 
-    ')'  сдвиг, и переход в состояние 7
+    '('  сдвиг, и переход в состояние 9
 
 
 Состояние 7
 
-    2 main: fn fmain '(' ')' . '{' statements '}'
+    0 $accept: crate $end .
 
-    '{'  сдвиг, и переход в состояние 8
+    $default  принять
 
 
 Состояние 8
 
-    2 main: fn fmain '(' ')' '{' . statements '}'
+    4 global_items: global_items global_item .
 
-    let          сдвиг, и переход в состояние 9
-    IF           сдвиг, и переход в состояние 10
-    WHILE        сдвиг, и переход в состояние 11
-    println      сдвиг, и переход в состояние 12
-    readln       сдвиг, и переход в состояние 13
-    symbol       сдвиг, и переход в состояние 14
-    commentline  сдвиг, и переход в состояние 15
-
-    $default  вывод с использованием правила 4 (statements)
-
-    statements       переход в состояние 16
-    statement        переход в состояние 17
-    assignment       переход в состояние 18
-    if_statement     переход в состояние 19
-    while_statement  переход в состояние 20
-    io_func          переход в состояние 21
-    fprintln         переход в состояние 22
-    freadln          переход в состояние 23
-    comments         переход в состояние 24
+    $default  вывод с использованием правила 4 (global_items)
 
 
 Состояние 9
 
-   10 assignment: let . symbol equal expr ';'
-   11           | let . mut symbol equal expr ';'
-   23 freadln: let . symbol equal readln '(' ')' ';'
+    6 function: FN ident '(' . maybe_params ')' maybe_return_type '{' statements '}'
 
-    mut     сдвиг, и переход в состояние 25
-    symbol  сдвиг, и переход в состояние 26
+    ident  сдвиг, и переход в состояние 10
+
+    $default  вывод с использованием правила 8 (maybe_params)
+
+    maybe_params  переход в состояние 11
+    params        переход в состояние 12
+    param         переход в состояние 13
+    pattern       переход в состояние 14
 
 
 Состояние 10
 
-   13 if_statement: IF . expr '{' statements '}'
-   14             | IF . expr '{' statements '}' ELSE '{' statements '}'
-   15             | IF . expr '{' statements '}' ELSE if_statement
+   12 pattern: ident .
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
-
-    expr  переход в состояние 30
+    $default  вывод с использованием правила 12 (pattern)
 
 
 Состояние 11
 
-   16 while_statement: WHILE . expr '{' statements '}'
+    6 function: FN ident '(' maybe_params . ')' maybe_return_type '{' statements '}'
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
-
-    expr  переход в состояние 31
+    ')'  сдвиг, и переход в состояние 15
 
 
 Состояние 12
 
-   19 fprintln: println . '(' string ')' ';'
-   20         | println . '(' symbol ')' ';'
-   21         | println . '(' number ')' ';'
+    7 maybe_params: params .
+   10 params: params . ',' param
 
-    '('  сдвиг, и переход в состояние 32
+    ','  сдвиг, и переход в состояние 16
+
+    $default  вывод с использованием правила 7 (maybe_params)
 
 
 Состояние 13
 
-   22 freadln: readln . '(' symbol ')' ';'
+    9 params: param .
 
-    '('  сдвиг, и переход в состояние 33
+    $default  вывод с использованием правила 9 (params)
 
 
 Состояние 14
 
-   12 assignment: symbol . equal expr ';'
+   11 param: pattern . ':' func_params_type
 
-    equal  сдвиг, и переход в состояние 34
+    ':'  сдвиг, и переход в состояние 17
 
 
 Состояние 15
 
-   40 comments: commentline .
+    6 function: FN ident '(' maybe_params ')' . maybe_return_type '{' statements '}'
 
-    $default  вывод с использованием правила 40 (comments)
+    RIGHT_ARROW  сдвиг, и переход в состояние 18
+
+    $default  вывод с использованием правила 24 (maybe_return_type)
+
+    maybe_return_type  переход в состояние 19
 
 
 Состояние 16
 
-    2 main: fn fmain '(' ')' '{' statements . '}'
+   10 params: params ',' . param
 
-    '}'  сдвиг, и переход в состояние 35
+    ident  сдвиг, и переход в состояние 10
+
+    param    переход в состояние 20
+    pattern  переход в состояние 14
 
 
 Состояние 17
 
-    3 statements: statement . statements
+   11 param: pattern ':' . func_params_type
 
-    let          сдвиг, и переход в состояние 9
-    IF           сдвиг, и переход в состояние 10
-    WHILE        сдвиг, и переход в состояние 11
-    println      сдвиг, и переход в состояние 12
-    readln       сдвиг, и переход в состояние 13
-    symbol       сдвиг, и переход в состояние 14
-    commentline  сдвиг, и переход в состояние 15
+    ident  сдвиг, и переход в состояние 21
+    '*'    сдвиг, и переход в состояние 22
+    '&'    сдвиг, и переход в состояние 23
+    '['    сдвиг, и переход в состояние 24
 
-    $default  вывод с использованием правила 4 (statements)
-
-    statements       переход в состояние 36
-    statement        переход в состояние 17
-    assignment       переход в состояние 18
-    if_statement     переход в состояние 19
-    while_statement  переход в состояние 20
-    io_func          переход в состояние 21
-    fprintln         переход в состояние 22
-    freadln          переход в состояние 23
-    comments         переход в состояние 24
+    func_params_type  переход в состояние 25
+    raw_type          переход в состояние 26
+    array_or_slice    переход в состояние 27
 
 
 Состояние 18
 
-    5 statement: assignment .
+   23 maybe_return_type: RIGHT_ARROW . func_return_type
 
-    $default  вывод с использованием правила 5 (statement)
+    ident  сдвиг, и переход в состояние 21
+    '&'    сдвиг, и переход в состояние 28
+    '['    сдвиг, и переход в состояние 24
+
+    raw_type          переход в состояние 29
+    array_or_slice    переход в состояние 27
+    func_return_type  переход в состояние 30
 
 
 Состояние 19
 
-    6 statement: if_statement .
+    6 function: FN ident '(' maybe_params ')' maybe_return_type . '{' statements '}'
 
-    $default  вывод с использованием правила 6 (statement)
+    '{'  сдвиг, и переход в состояние 31
 
 
 Состояние 20
 
-    7 statement: while_statement .
+   10 params: params ',' param .
 
-    $default  вывод с использованием правила 7 (statement)
+    $default  вывод с использованием правила 10 (params)
 
 
 Состояние 21
 
-    8 statement: io_func .
+   20 raw_type: ident .
 
-    $default  вывод с использованием правила 8 (statement)
+    $default  вывод с использованием правила 20 (raw_type)
 
 
 Состояние 22
 
-   17 io_func: fprintln .
+   16 func_params_type: '*' . maybe_mut_or_const raw_type
 
-    $default  вывод с использованием правила 17 (io_func)
+    MUT    сдвиг, и переход в состояние 32
+    CONST  сдвиг, и переход в состояние 33
+
+    $default  вывод с использованием правила 19 (maybe_mut_or_const)
+
+    maybe_mut_or_const  переход в состояние 34
 
 
 Состояние 23
 
-   18 io_func: freadln .
+   14 func_params_type: '&' . raw_type
+   15                 | '&' . MUT raw_type
 
-    $default  вывод с использованием правила 18 (io_func)
+    MUT    сдвиг, и переход в состояние 35
+    ident  сдвиг, и переход в состояние 21
+    '['    сдвиг, и переход в состояние 24
+
+    raw_type        переход в состояние 36
+    array_or_slice  переход в состояние 27
 
 
 Состояние 24
 
-    9 statement: comments .
+   22 array_or_slice: '[' . ident ']' '[' ident ';' number ']'
 
-    $default  вывод с использованием правила 9 (statement)
+    ident  сдвиг, и переход в состояние 37
 
 
 Состояние 25
 
-   11 assignment: let mut . symbol equal expr ';'
+   11 param: pattern ':' func_params_type .
 
-    symbol  сдвиг, и переход в состояние 37
+    $default  вывод с использованием правила 11 (param)
 
 
 Состояние 26
 
-   10 assignment: let symbol . equal expr ';'
-   23 freadln: let symbol . equal readln '(' ')' ';'
+   13 func_params_type: raw_type .
 
-    equal  сдвиг, и переход в состояние 38
+    $default  вывод с использованием правила 13 (func_params_type)
 
 
 Состояние 27
 
-   37 expr: number .
+   21 raw_type: array_or_slice .
 
-    $default  вывод с использованием правила 37 (expr)
+    $default  вывод с использованием правила 21 (raw_type)
 
 
 Состояние 28
 
-   39 expr: symbol .
+   26 func_return_type: '&' . raw_type
+   27                 | '&' . MUT raw_type
 
-    $default  вывод с использованием правила 39 (expr)
+    MUT    сдвиг, и переход в состояние 38
+    ident  сдвиг, и переход в состояние 21
+    '['    сдвиг, и переход в состояние 24
+
+    raw_type        переход в состояние 39
+    array_or_slice  переход в состояние 27
 
 
 Состояние 29
 
-   38 expr: minus . number
+   25 func_return_type: raw_type .
 
-    number  сдвиг, и переход в состояние 39
+    $default  вывод с использованием правила 25 (func_return_type)
 
 
 Состояние 30
 
-   13 if_statement: IF expr . '{' statements '}'
-   14             | IF expr . '{' statements '}' ELSE '{' statements '}'
-   15             | IF expr . '{' statements '}' ELSE if_statement
-   24 expr: expr . and expr
-   25     | expr . or expr
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   28     | expr . grt expr
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   32     | expr . plus expr
-   33     | expr . mult expr
-   34     | expr . minus expr
-   35     | expr . divi expr
-   36     | expr . mod expr
+   23 maybe_return_type: RIGHT_ARROW func_return_type .
 
-    plus   сдвиг, и переход в состояние 40
-    minus  сдвиг, и переход в состояние 41
-    mult   сдвиг, и переход в состояние 42
-    divi   сдвиг, и переход в состояние 43
-    mod    сдвиг, и переход в состояние 44
-    and    сдвиг, и переход в состояние 45
-    or     сдвиг, и переход в состояние 46
-    eqt    сдвиг, и переход в состояние 47
-    grt    сдвиг, и переход в состояние 48
-    geq    сдвиг, и переход в состояние 49
-    lrt    сдвиг, и переход в состояние 50
-    leq    сдвиг, и переход в состояние 51
-    neq    сдвиг, и переход в состояние 52
-    '{'    сдвиг, и переход в состояние 53
+    $default  вывод с использованием правила 23 (maybe_return_type)
 
 
 Состояние 31
 
-   16 while_statement: WHILE expr . '{' statements '}'
-   24 expr: expr . and expr
-   25     | expr . or expr
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   28     | expr . grt expr
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   32     | expr . plus expr
-   33     | expr . mult expr
-   34     | expr . minus expr
-   35     | expr . divi expr
-   36     | expr . mod expr
+    6 function: FN ident '(' maybe_params ')' maybe_return_type '{' . statements '}'
 
-    plus   сдвиг, и переход в состояние 40
-    minus  сдвиг, и переход в состояние 41
-    mult   сдвиг, и переход в состояние 42
-    divi   сдвиг, и переход в состояние 43
-    mod    сдвиг, и переход в состояние 44
-    and    сдвиг, и переход в состояние 45
-    or     сдвиг, и переход в состояние 46
-    eqt    сдвиг, и переход в состояние 47
-    grt    сдвиг, и переход в состояние 48
-    geq    сдвиг, и переход в состояние 49
-    lrt    сдвиг, и переход в состояние 50
-    leq    сдвиг, и переход в состояние 51
-    neq    сдвиг, и переход в состояние 52
-    '{'    сдвиг, и переход в состояние 54
+    LET          сдвиг, и переход в состояние 40
+    IF           сдвиг, и переход в состояние 41
+    WHILE        сдвиг, и переход в состояние 42
+    ident        сдвиг, и переход в состояние 43
+    commentline  сдвиг, и переход в состояние 44
+    RETURN       сдвиг, и переход в состояние 45
+
+    $default  вывод с использованием правила 29 (statements)
+
+    statements       переход в состояние 46
+    statement        переход в состояние 47
+    return_expr      переход в состояние 48
+    assignment       переход в состояние 49
+    if_statement     переход в состояние 50
+    while_statement  переход в состояние 51
+    comments         переход в состояние 52
 
 
 Состояние 32
 
-   19 fprintln: println '(' . string ')' ';'
-   20         | println '(' . symbol ')' ';'
-   21         | println '(' . number ')' ';'
+   17 maybe_mut_or_const: MUT .
 
-    number  сдвиг, и переход в состояние 55
-    symbol  сдвиг, и переход в состояние 56
-    string  сдвиг, и переход в состояние 57
+    $default  вывод с использованием правила 17 (maybe_mut_or_const)
 
 
 Состояние 33
 
-   22 freadln: readln '(' . symbol ')' ';'
+   18 maybe_mut_or_const: CONST .
 
-    symbol  сдвиг, и переход в состояние 58
+    $default  вывод с использованием правила 18 (maybe_mut_or_const)
 
 
 Состояние 34
 
-   12 assignment: symbol equal . expr ';'
+   16 func_params_type: '*' maybe_mut_or_const . raw_type
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
+    ident  сдвиг, и переход в состояние 21
+    '['    сдвиг, и переход в состояние 24
 
-    expr  переход в состояние 59
+    raw_type        переход в состояние 53
+    array_or_slice  переход в состояние 27
 
 
 Состояние 35
 
-    2 main: fn fmain '(' ')' '{' statements '}' .
+   15 func_params_type: '&' MUT . raw_type
 
-    $default  вывод с использованием правила 2 (main)
+    ident  сдвиг, и переход в состояние 21
+    '['    сдвиг, и переход в состояние 24
+
+    raw_type        переход в состояние 54
+    array_or_slice  переход в состояние 27
 
 
 Состояние 36
 
-    3 statements: statement statements .
+   14 func_params_type: '&' raw_type .
 
-    $default  вывод с использованием правила 3 (statements)
+    $default  вывод с использованием правила 14 (func_params_type)
 
 
 Состояние 37
 
-   11 assignment: let mut symbol . equal expr ';'
+   22 array_or_slice: '[' ident . ']' '[' ident ';' number ']'
 
-    equal  сдвиг, и переход в состояние 60
+    ']'  сдвиг, и переход в состояние 55
 
 
 Состояние 38
 
-   10 assignment: let symbol equal . expr ';'
-   23 freadln: let symbol equal . readln '(' ')' ';'
+   27 func_return_type: '&' MUT . raw_type
 
-    readln  сдвиг, и переход в состояние 61
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
+    ident  сдвиг, и переход в состояние 21
+    '['    сдвиг, и переход в состояние 24
 
-    expr  переход в состояние 62
+    raw_type        переход в состояние 56
+    array_or_slice  переход в состояние 27
 
 
 Состояние 39
 
-   38 expr: minus number .
+   26 func_return_type: '&' raw_type .
 
-    $default  вывод с использованием правила 38 (expr)
+    $default  вывод с использованием правила 26 (func_return_type)
 
 
 Состояние 40
 
-   32 expr: expr plus . expr
+   37 assignment: LET . ident '=' expr ';'
+   38           | LET . MUT ident '=' expr ';'
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
-
-    expr  переход в состояние 63
+    MUT    сдвиг, и переход в состояние 57
+    ident  сдвиг, и переход в состояние 58
 
 
 Состояние 41
 
-   34 expr: expr minus . expr
+   40 if_statement: IF . expr '{' statements '}'
+   41             | IF . expr '{' statements '}' ELSE '{' statements '}'
+   42             | IF . expr '{' statements '}' ELSE if_statement
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
 
-    expr  переход в состояние 64
+    expr                 переход в состояние 64
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 42
 
-   33 expr: expr mult . expr
+   43 while_statement: WHILE . expr '{' statements '}'
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
 
-    expr  переход в состояние 65
+    expr                 переход в состояние 67
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 43
 
-   35 expr: expr divi . expr
+   39 assignment: ident . '=' expr ';'
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
-
-    expr  переход в состояние 66
+    '='  сдвиг, и переход в состояние 68
 
 
 Состояние 44
 
-   36 expr: expr mod . expr
+   82 comments: commentline .
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
-
-    expr  переход в состояние 67
+    $default  вывод с использованием правила 82 (comments)
 
 
 Состояние 45
 
-   24 expr: expr and . expr
+   35 return_expr: RETURN . ';'
+   36            | RETURN . expr ';'
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
+    ';'          сдвиг, и переход в состояние 69
 
-    expr  переход в состояние 68
+    expr                 переход в состояние 70
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 46
 
-   25 expr: expr or . expr
+    6 function: FN ident '(' maybe_params ')' maybe_return_type '{' statements . '}'
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
-
-    expr  переход в состояние 69
+    '}'  сдвиг, и переход в состояние 71
 
 
 Состояние 47
 
-   26 expr: expr eqt . expr
+   28 statements: statement . statements
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
+    LET          сдвиг, и переход в состояние 40
+    IF           сдвиг, и переход в состояние 41
+    WHILE        сдвиг, и переход в состояние 42
+    ident        сдвиг, и переход в состояние 43
+    commentline  сдвиг, и переход в состояние 44
+    RETURN       сдвиг, и переход в состояние 45
 
-    expr  переход в состояние 70
+    $default  вывод с использованием правила 29 (statements)
+
+    statements       переход в состояние 72
+    statement        переход в состояние 47
+    return_expr      переход в состояние 48
+    assignment       переход в состояние 49
+    if_statement     переход в состояние 50
+    while_statement  переход в состояние 51
+    comments         переход в состояние 52
 
 
 Состояние 48
 
-   28 expr: expr grt . expr
+   34 statement: return_expr .
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
-
-    expr  переход в состояние 71
+    $default  вывод с использованием правила 34 (statement)
 
 
 Состояние 49
 
-   29 expr: expr geq . expr
+   30 statement: assignment .
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
-
-    expr  переход в состояние 72
+    $default  вывод с использованием правила 30 (statement)
 
 
 Состояние 50
 
-   30 expr: expr lrt . expr
+   31 statement: if_statement .
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
-
-    expr  переход в состояние 73
+    $default  вывод с использованием правила 31 (statement)
 
 
 Состояние 51
 
-   31 expr: expr leq . expr
+   32 statement: while_statement .
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
-
-    expr  переход в состояние 74
+    $default  вывод с использованием правила 32 (statement)
 
 
 Состояние 52
 
-   27 expr: expr neq . expr
+   33 statement: comments .
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
-
-    expr  переход в состояние 75
+    $default  вывод с использованием правила 33 (statement)
 
 
 Состояние 53
 
-   13 if_statement: IF expr '{' . statements '}'
-   14             | IF expr '{' . statements '}' ELSE '{' statements '}'
-   15             | IF expr '{' . statements '}' ELSE if_statement
+   16 func_params_type: '*' maybe_mut_or_const raw_type .
 
-    let          сдвиг, и переход в состояние 9
-    IF           сдвиг, и переход в состояние 10
-    WHILE        сдвиг, и переход в состояние 11
-    println      сдвиг, и переход в состояние 12
-    readln       сдвиг, и переход в состояние 13
-    symbol       сдвиг, и переход в состояние 14
-    commentline  сдвиг, и переход в состояние 15
-
-    $default  вывод с использованием правила 4 (statements)
-
-    statements       переход в состояние 76
-    statement        переход в состояние 17
-    assignment       переход в состояние 18
-    if_statement     переход в состояние 19
-    while_statement  переход в состояние 20
-    io_func          переход в состояние 21
-    fprintln         переход в состояние 22
-    freadln          переход в состояние 23
-    comments         переход в состояние 24
+    $default  вывод с использованием правила 16 (func_params_type)
 
 
 Состояние 54
 
-   16 while_statement: WHILE expr '{' . statements '}'
+   15 func_params_type: '&' MUT raw_type .
 
-    let          сдвиг, и переход в состояние 9
-    IF           сдвиг, и переход в состояние 10
-    WHILE        сдвиг, и переход в состояние 11
-    println      сдвиг, и переход в состояние 12
-    readln       сдвиг, и переход в состояние 13
-    symbol       сдвиг, и переход в состояние 14
-    commentline  сдвиг, и переход в состояние 15
-
-    $default  вывод с использованием правила 4 (statements)
-
-    statements       переход в состояние 77
-    statement        переход в состояние 17
-    assignment       переход в состояние 18
-    if_statement     переход в состояние 19
-    while_statement  переход в состояние 20
-    io_func          переход в состояние 21
-    fprintln         переход в состояние 22
-    freadln          переход в состояние 23
-    comments         переход в состояние 24
+    $default  вывод с использованием правила 15 (func_params_type)
 
 
 Состояние 55
 
-   21 fprintln: println '(' number . ')' ';'
+   22 array_or_slice: '[' ident ']' . '[' ident ';' number ']'
 
-    ')'  сдвиг, и переход в состояние 78
+    '['  сдвиг, и переход в состояние 73
 
 
 Состояние 56
 
-   20 fprintln: println '(' symbol . ')' ';'
+   27 func_return_type: '&' MUT raw_type .
 
-    ')'  сдвиг, и переход в состояние 79
+    $default  вывод с использованием правила 27 (func_return_type)
 
 
 Состояние 57
 
-   19 fprintln: println '(' string . ')' ';'
+   38 assignment: LET MUT . ident '=' expr ';'
 
-    ')'  сдвиг, и переход в состояние 80
+    ident  сдвиг, и переход в состояние 74
 
 
 Состояние 58
 
-   22 freadln: readln '(' symbol . ')' ';'
+   37 assignment: LET ident . '=' expr ';'
 
-    ')'  сдвиг, и переход в состояние 81
+    '='  сдвиг, и переход в состояние 75
 
 
 Состояние 59
 
-   12 assignment: symbol equal expr . ';'
-   24 expr: expr . and expr
-   25     | expr . or expr
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   28     | expr . grt expr
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   32     | expr . plus expr
-   33     | expr . mult expr
-   34     | expr . minus expr
-   35     | expr . divi expr
-   36     | expr . mod expr
+   57 expr: number .
 
-    plus   сдвиг, и переход в состояние 40
-    minus  сдвиг, и переход в состояние 41
-    mult   сдвиг, и переход в состояние 42
-    divi   сдвиг, и переход в состояние 43
-    mod    сдвиг, и переход в состояние 44
-    and    сдвиг, и переход в состояние 45
-    or     сдвиг, и переход в состояние 46
-    eqt    сдвиг, и переход в состояние 47
-    grt    сдвиг, и переход в состояние 48
-    geq    сдвиг, и переход в состояние 49
-    lrt    сдвиг, и переход в состояние 50
-    leq    сдвиг, и переход в состояние 51
-    neq    сдвиг, и переход в состояние 52
-    ';'    сдвиг, и переход в состояние 82
+    $default  вывод с использованием правила 57 (expr)
 
 
 Состояние 60
 
-   11 assignment: let mut symbol equal . expr ';'
+   59 expr: ident .
+   64 function_call: ident . '(' maybe_args ')'
 
-    number  сдвиг, и переход в состояние 27
-    symbol  сдвиг, и переход в состояние 28
-    minus   сдвиг, и переход в состояние 29
+    '('  сдвиг, и переход в состояние 76
 
-    expr  переход в состояние 83
+    $default  вывод с использованием правила 59 (expr)
 
 
 Состояние 61
 
-   23 freadln: let symbol equal readln . '(' ')' ';'
+   60 expr: string .
 
-    '('  сдвиг, и переход в состояние 84
+    $default  вывод с использованием правила 60 (expr)
 
 
 Состояние 62
 
-   10 assignment: let symbol equal expr . ';'
-   24 expr: expr . and expr
-   25     | expr . or expr
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   28     | expr . grt expr
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   32     | expr . plus expr
-   33     | expr . mult expr
-   34     | expr . minus expr
-   35     | expr . divi expr
-   36     | expr . mod expr
+   63 macro_function_call: macro_ident . '(' maybe_args ')'
 
-    plus   сдвиг, и переход в состояние 40
-    minus  сдвиг, и переход в состояние 41
-    mult   сдвиг, и переход в состояние 42
-    divi   сдвиг, и переход в состояние 43
-    mod    сдвиг, и переход в состояние 44
-    and    сдвиг, и переход в состояние 45
-    or     сдвиг, и переход в состояние 46
-    eqt    сдвиг, и переход в состояние 47
-    grt    сдвиг, и переход в состояние 48
-    geq    сдвиг, и переход в состояние 49
-    lrt    сдвиг, и переход в состояние 50
-    leq    сдвиг, и переход в состояние 51
-    neq    сдвиг, и переход в состояние 52
-    ';'    сдвиг, и переход в состояние 85
+    '('  сдвиг, и переход в состояние 77
 
 
 Состояние 63
 
-   24 expr: expr . and expr
-   25     | expr . or expr
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   28     | expr . grt expr
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   32     | expr . plus expr
-   32     | expr plus expr .
-   33     | expr . mult expr
-   34     | expr . minus expr
-   35     | expr . divi expr
-   36     | expr . mod expr
+   58 expr: '-' . number
 
-    mult  сдвиг, и переход в состояние 42
-    divi  сдвиг, и переход в состояние 43
-    mod   сдвиг, и переход в состояние 44
-
-    $default  вывод с использованием правила 32 (expr)
+    number  сдвиг, и переход в состояние 78
 
 
 Состояние 64
 
-   24 expr: expr . and expr
-   25     | expr . or expr
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   28     | expr . grt expr
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   32     | expr . plus expr
-   33     | expr . mult expr
-   34     | expr . minus expr
-   34     | expr minus expr .
-   35     | expr . divi expr
-   36     | expr . mod expr
+   40 if_statement: IF expr . '{' statements '}'
+   41             | IF expr . '{' statements '}' ELSE '{' statements '}'
+   42             | IF expr . '{' statements '}' ELSE if_statement
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
 
-    mult  сдвиг, и переход в состояние 42
-    divi  сдвиг, и переход в состояние 43
-    mod   сдвиг, и переход в состояние 44
-
-    $default  вывод с использованием правила 34 (expr)
+    '+'  сдвиг, и переход в состояние 79
+    '-'  сдвиг, и переход в состояние 80
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+    and  сдвиг, и переход в состояние 84
+    or   сдвиг, и переход в состояние 85
+    eqt  сдвиг, и переход в состояние 86
+    grt  сдвиг, и переход в состояние 87
+    geq  сдвиг, и переход в состояние 88
+    lrt  сдвиг, и переход в состояние 89
+    leq  сдвиг, и переход в состояние 90
+    neq  сдвиг, и переход в состояние 91
+    '{'  сдвиг, и переход в состояние 92
 
 
 Состояние 65
 
-   24 expr: expr . and expr
-   25     | expr . or expr
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   28     | expr . grt expr
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   32     | expr . plus expr
-   33     | expr . mult expr
-   33     | expr mult expr .
-   34     | expr . minus expr
-   35     | expr . divi expr
-   36     | expr . mod expr
+   62 expr: macro_function_call .
 
-    $default  вывод с использованием правила 33 (expr)
+    $default  вывод с использованием правила 62 (expr)
 
 
 Состояние 66
 
-   24 expr: expr . and expr
-   25     | expr . or expr
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   28     | expr . grt expr
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   32     | expr . plus expr
-   33     | expr . mult expr
-   34     | expr . minus expr
-   35     | expr . divi expr
-   35     | expr divi expr .
-   36     | expr . mod expr
+   61 expr: function_call .
 
-    $default  вывод с использованием правила 35 (expr)
+    $default  вывод с использованием правила 61 (expr)
 
 
 Состояние 67
 
-   24 expr: expr . and expr
-   25     | expr . or expr
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   28     | expr . grt expr
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   32     | expr . plus expr
-   33     | expr . mult expr
-   34     | expr . minus expr
-   35     | expr . divi expr
-   36     | expr . mod expr
-   36     | expr mod expr .
+   43 while_statement: WHILE expr . '{' statements '}'
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
 
-    $default  вывод с использованием правила 36 (expr)
+    '+'  сдвиг, и переход в состояние 79
+    '-'  сдвиг, и переход в состояние 80
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+    and  сдвиг, и переход в состояние 84
+    or   сдвиг, и переход в состояние 85
+    eqt  сдвиг, и переход в состояние 86
+    grt  сдвиг, и переход в состояние 87
+    geq  сдвиг, и переход в состояние 88
+    lrt  сдвиг, и переход в состояние 89
+    leq  сдвиг, и переход в состояние 90
+    neq  сдвиг, и переход в состояние 91
+    '{'  сдвиг, и переход в состояние 93
 
 
 Состояние 68
 
-   24 expr: expr . and expr
-   24     | expr and expr .
-   25     | expr . or expr
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   28     | expr . grt expr
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   32     | expr . plus expr
-   33     | expr . mult expr
-   34     | expr . minus expr
-   35     | expr . divi expr
-   36     | expr . mod expr
+   39 assignment: ident '=' . expr ';'
 
-    plus   сдвиг, и переход в состояние 40
-    minus  сдвиг, и переход в состояние 41
-    mult   сдвиг, и переход в состояние 42
-    divi   сдвиг, и переход в состояние 43
-    mod    сдвиг, и переход в состояние 44
-    eqt    сдвиг, и переход в состояние 47
-    grt    сдвиг, и переход в состояние 48
-    geq    сдвиг, и переход в состояние 49
-    lrt    сдвиг, и переход в состояние 50
-    leq    сдвиг, и переход в состояние 51
-    neq    сдвиг, и переход в состояние 52
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
 
-    $default  вывод с использованием правила 24 (expr)
+    expr                 переход в состояние 94
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 69
 
-   24 expr: expr . and expr
-   25     | expr . or expr
-   25     | expr or expr .
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   28     | expr . grt expr
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   32     | expr . plus expr
-   33     | expr . mult expr
-   34     | expr . minus expr
-   35     | expr . divi expr
-   36     | expr . mod expr
+   35 return_expr: RETURN ';' .
 
-    plus   сдвиг, и переход в состояние 40
-    minus  сдвиг, и переход в состояние 41
-    mult   сдвиг, и переход в состояние 42
-    divi   сдвиг, и переход в состояние 43
-    mod    сдвиг, и переход в состояние 44
-    eqt    сдвиг, и переход в состояние 47
-    grt    сдвиг, и переход в состояние 48
-    geq    сдвиг, и переход в состояние 49
-    lrt    сдвиг, и переход в состояние 50
-    leq    сдвиг, и переход в состояние 51
-    neq    сдвиг, и переход в состояние 52
-
-    $default  вывод с использованием правила 25 (expr)
+    $default  вывод с использованием правила 35 (return_expr)
 
 
 Состояние 70
 
-   24 expr: expr . and expr
-   25     | expr . or expr
-   26     | expr . eqt expr
-   26     | expr eqt expr .
-   27     | expr . neq expr
-   28     | expr . grt expr
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   32     | expr . plus expr
-   33     | expr . mult expr
-   34     | expr . minus expr
-   35     | expr . divi expr
-   36     | expr . mod expr
+   36 return_expr: RETURN expr . ';'
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
 
-    plus   сдвиг, и переход в состояние 40
-    minus  сдвиг, и переход в состояние 41
-    mult   сдвиг, и переход в состояние 42
-    divi   сдвиг, и переход в состояние 43
-    mod    сдвиг, и переход в состояние 44
-
-    $default  вывод с использованием правила 26 (expr)
+    '+'  сдвиг, и переход в состояние 79
+    '-'  сдвиг, и переход в состояние 80
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+    and  сдвиг, и переход в состояние 84
+    or   сдвиг, и переход в состояние 85
+    eqt  сдвиг, и переход в состояние 86
+    grt  сдвиг, и переход в состояние 87
+    geq  сдвиг, и переход в состояние 88
+    lrt  сдвиг, и переход в состояние 89
+    leq  сдвиг, и переход в состояние 90
+    neq  сдвиг, и переход в состояние 91
+    ';'  сдвиг, и переход в состояние 95
 
 
 Состояние 71
 
-   24 expr: expr . and expr
-   25     | expr . or expr
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   28     | expr . grt expr
-   28     | expr grt expr .
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   32     | expr . plus expr
-   33     | expr . mult expr
-   34     | expr . minus expr
-   35     | expr . divi expr
-   36     | expr . mod expr
+    6 function: FN ident '(' maybe_params ')' maybe_return_type '{' statements '}' .
 
-    plus   сдвиг, и переход в состояние 40
-    minus  сдвиг, и переход в состояние 41
-    mult   сдвиг, и переход в состояние 42
-    divi   сдвиг, и переход в состояние 43
-    mod    сдвиг, и переход в состояние 44
-
-    $default  вывод с использованием правила 28 (expr)
+    $default  вывод с использованием правила 6 (function)
 
 
 Состояние 72
 
-   24 expr: expr . and expr
-   25     | expr . or expr
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   28     | expr . grt expr
-   29     | expr . geq expr
-   29     | expr geq expr .
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   32     | expr . plus expr
-   33     | expr . mult expr
-   34     | expr . minus expr
-   35     | expr . divi expr
-   36     | expr . mod expr
+   28 statements: statement statements .
 
-    plus   сдвиг, и переход в состояние 40
-    minus  сдвиг, и переход в состояние 41
-    mult   сдвиг, и переход в состояние 42
-    divi   сдвиг, и переход в состояние 43
-    mod    сдвиг, и переход в состояние 44
-
-    $default  вывод с использованием правила 29 (expr)
+    $default  вывод с использованием правила 28 (statements)
 
 
 Состояние 73
 
-   24 expr: expr . and expr
-   25     | expr . or expr
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   28     | expr . grt expr
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   30     | expr lrt expr .
-   31     | expr . leq expr
-   32     | expr . plus expr
-   33     | expr . mult expr
-   34     | expr . minus expr
-   35     | expr . divi expr
-   36     | expr . mod expr
+   22 array_or_slice: '[' ident ']' '[' . ident ';' number ']'
 
-    plus   сдвиг, и переход в состояние 40
-    minus  сдвиг, и переход в состояние 41
-    mult   сдвиг, и переход в состояние 42
-    divi   сдвиг, и переход в состояние 43
-    mod    сдвиг, и переход в состояние 44
-
-    $default  вывод с использованием правила 30 (expr)
+    ident  сдвиг, и переход в состояние 96
 
 
 Состояние 74
 
-   24 expr: expr . and expr
-   25     | expr . or expr
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   28     | expr . grt expr
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   31     | expr leq expr .
-   32     | expr . plus expr
-   33     | expr . mult expr
-   34     | expr . minus expr
-   35     | expr . divi expr
-   36     | expr . mod expr
+   38 assignment: LET MUT ident . '=' expr ';'
 
-    plus   сдвиг, и переход в состояние 40
-    minus  сдвиг, и переход в состояние 41
-    mult   сдвиг, и переход в состояние 42
-    divi   сдвиг, и переход в состояние 43
-    mod    сдвиг, и переход в состояние 44
-
-    $default  вывод с использованием правила 31 (expr)
+    '='  сдвиг, и переход в состояние 97
 
 
 Состояние 75
 
-   24 expr: expr . and expr
-   25     | expr . or expr
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   27     | expr neq expr .
-   28     | expr . grt expr
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   32     | expr . plus expr
-   33     | expr . mult expr
-   34     | expr . minus expr
-   35     | expr . divi expr
-   36     | expr . mod expr
+   37 assignment: LET ident '=' . expr ';'
 
-    plus   сдвиг, и переход в состояние 40
-    minus  сдвиг, и переход в состояние 41
-    mult   сдвиг, и переход в состояние 42
-    divi   сдвиг, и переход в состояние 43
-    mod    сдвиг, и переход в состояние 44
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
 
-    $default  вывод с использованием правила 27 (expr)
+    expr                 переход в состояние 98
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 76
 
-   13 if_statement: IF expr '{' statements . '}'
-   14             | IF expr '{' statements . '}' ELSE '{' statements '}'
-   15             | IF expr '{' statements . '}' ELSE if_statement
+   64 function_call: ident '(' . maybe_args ')'
 
-    '}'  сдвиг, и переход в состояние 86
+    number       сдвиг, и переход в состояние 99
+    ident        сдвиг, и переход в состояние 100
+    string       сдвиг, и переход в состояние 101
+    macro_ident  сдвиг, и переход в состояние 62
+    '('          сдвиг, и переход в состояние 102
+    '&'          сдвиг, и переход в состояние 103
+    '['          сдвиг, и переход в состояние 24
+
+    $default  вывод с использованием правила 66 (maybe_args)
+
+    array_or_slice       переход в состояние 104
+    macro_function_call  переход в состояние 105
+    function_call        переход в состояние 106
+    maybe_args           переход в состояние 107
+    args                 переход в состояние 108
+    arg                  переход в состояние 109
+    expr_for_passing     переход в состояние 110
+    non_brackets_expr    переход в состояние 111
 
 
 Состояние 77
 
-   16 while_statement: WHILE expr '{' statements . '}'
+   63 macro_function_call: macro_ident '(' . maybe_args ')'
 
-    '}'  сдвиг, и переход в состояние 87
+    number       сдвиг, и переход в состояние 99
+    ident        сдвиг, и переход в состояние 100
+    string       сдвиг, и переход в состояние 101
+    macro_ident  сдвиг, и переход в состояние 62
+    '('          сдвиг, и переход в состояние 102
+    '&'          сдвиг, и переход в состояние 103
+    '['          сдвиг, и переход в состояние 24
+
+    $default  вывод с использованием правила 66 (maybe_args)
+
+    array_or_slice       переход в состояние 104
+    macro_function_call  переход в состояние 105
+    function_call        переход в состояние 106
+    maybe_args           переход в состояние 112
+    args                 переход в состояние 108
+    arg                  переход в состояние 109
+    expr_for_passing     переход в состояние 110
+    non_brackets_expr    переход в состояние 111
 
 
 Состояние 78
 
-   21 fprintln: println '(' number ')' . ';'
+   58 expr: '-' number .
 
-    ';'  сдвиг, и переход в состояние 88
+    $default  вывод с использованием правила 58 (expr)
 
 
 Состояние 79
 
-   20 fprintln: println '(' symbol ')' . ';'
+   52 expr: expr '+' . expr
 
-    ';'  сдвиг, и переход в состояние 89
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
+
+    expr                 переход в состояние 113
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 80
 
-   19 fprintln: println '(' string ')' . ';'
+   54 expr: expr '-' . expr
 
-    ';'  сдвиг, и переход в состояние 90
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
+
+    expr                 переход в состояние 114
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 81
 
-   22 freadln: readln '(' symbol ')' . ';'
+   53 expr: expr '*' . expr
 
-    ';'  сдвиг, и переход в состояние 91
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
+
+    expr                 переход в состояние 115
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 82
 
-   12 assignment: symbol equal expr ';' .
+   55 expr: expr '/' . expr
 
-    $default  вывод с использованием правила 12 (assignment)
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
+
+    expr                 переход в состояние 116
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 83
 
-   11 assignment: let mut symbol equal expr . ';'
-   24 expr: expr . and expr
-   25     | expr . or expr
-   26     | expr . eqt expr
-   27     | expr . neq expr
-   28     | expr . grt expr
-   29     | expr . geq expr
-   30     | expr . lrt expr
-   31     | expr . leq expr
-   32     | expr . plus expr
-   33     | expr . mult expr
-   34     | expr . minus expr
-   35     | expr . divi expr
-   36     | expr . mod expr
+   56 expr: expr '%' . expr
 
-    plus   сдвиг, и переход в состояние 40
-    minus  сдвиг, и переход в состояние 41
-    mult   сдвиг, и переход в состояние 42
-    divi   сдвиг, и переход в состояние 43
-    mod    сдвиг, и переход в состояние 44
-    and    сдвиг, и переход в состояние 45
-    or     сдвиг, и переход в состояние 46
-    eqt    сдвиг, и переход в состояние 47
-    grt    сдвиг, и переход в состояние 48
-    geq    сдвиг, и переход в состояние 49
-    lrt    сдвиг, и переход в состояние 50
-    leq    сдвиг, и переход в состояние 51
-    neq    сдвиг, и переход в состояние 52
-    ';'    сдвиг, и переход в состояние 92
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
+
+    expr                 переход в состояние 117
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 84
 
-   23 freadln: let symbol equal readln '(' . ')' ';'
+   44 expr: expr and . expr
 
-    ')'  сдвиг, и переход в состояние 93
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
+
+    expr                 переход в состояние 118
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 85
 
-   10 assignment: let symbol equal expr ';' .
+   45 expr: expr or . expr
 
-    $default  вывод с использованием правила 10 (assignment)
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
+
+    expr                 переход в состояние 119
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 86
 
-   13 if_statement: IF expr '{' statements '}' .
-   14             | IF expr '{' statements '}' . ELSE '{' statements '}'
-   15             | IF expr '{' statements '}' . ELSE if_statement
+   46 expr: expr eqt . expr
 
-    ELSE  сдвиг, и переход в состояние 94
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
 
-    $default  вывод с использованием правила 13 (if_statement)
+    expr                 переход в состояние 120
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 87
 
-   16 while_statement: WHILE expr '{' statements '}' .
+   48 expr: expr grt . expr
 
-    $default  вывод с использованием правила 16 (while_statement)
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
+
+    expr                 переход в состояние 121
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 88
 
-   21 fprintln: println '(' number ')' ';' .
+   49 expr: expr geq . expr
 
-    $default  вывод с использованием правила 21 (fprintln)
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
+
+    expr                 переход в состояние 122
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 89
 
-   20 fprintln: println '(' symbol ')' ';' .
+   50 expr: expr lrt . expr
 
-    $default  вывод с использованием правила 20 (fprintln)
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
+
+    expr                 переход в состояние 123
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 90
 
-   19 fprintln: println '(' string ')' ';' .
+   51 expr: expr leq . expr
 
-    $default  вывод с использованием правила 19 (fprintln)
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
+
+    expr                 переход в состояние 124
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 91
 
-   22 freadln: readln '(' symbol ')' ';' .
+   47 expr: expr neq . expr
 
-    $default  вывод с использованием правила 22 (freadln)
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
+
+    expr                 переход в состояние 125
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 92
 
-   11 assignment: let mut symbol equal expr ';' .
+   40 if_statement: IF expr '{' . statements '}'
+   41             | IF expr '{' . statements '}' ELSE '{' statements '}'
+   42             | IF expr '{' . statements '}' ELSE if_statement
 
-    $default  вывод с использованием правила 11 (assignment)
+    LET          сдвиг, и переход в состояние 40
+    IF           сдвиг, и переход в состояние 41
+    WHILE        сдвиг, и переход в состояние 42
+    ident        сдвиг, и переход в состояние 43
+    commentline  сдвиг, и переход в состояние 44
+    RETURN       сдвиг, и переход в состояние 45
+
+    $default  вывод с использованием правила 29 (statements)
+
+    statements       переход в состояние 126
+    statement        переход в состояние 47
+    return_expr      переход в состояние 48
+    assignment       переход в состояние 49
+    if_statement     переход в состояние 50
+    while_statement  переход в состояние 51
+    comments         переход в состояние 52
 
 
 Состояние 93
 
-   23 freadln: let symbol equal readln '(' ')' . ';'
+   43 while_statement: WHILE expr '{' . statements '}'
 
-    ';'  сдвиг, и переход в состояние 95
+    LET          сдвиг, и переход в состояние 40
+    IF           сдвиг, и переход в состояние 41
+    WHILE        сдвиг, и переход в состояние 42
+    ident        сдвиг, и переход в состояние 43
+    commentline  сдвиг, и переход в состояние 44
+    RETURN       сдвиг, и переход в состояние 45
+
+    $default  вывод с использованием правила 29 (statements)
+
+    statements       переход в состояние 127
+    statement        переход в состояние 47
+    return_expr      переход в состояние 48
+    assignment       переход в состояние 49
+    if_statement     переход в состояние 50
+    while_statement  переход в состояние 51
+    comments         переход в состояние 52
 
 
 Состояние 94
 
-   14 if_statement: IF expr '{' statements '}' ELSE . '{' statements '}'
-   15             | IF expr '{' statements '}' ELSE . if_statement
+   39 assignment: ident '=' expr . ';'
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
 
-    IF   сдвиг, и переход в состояние 10
-    '{'  сдвиг, и переход в состояние 96
-
-    if_statement  переход в состояние 97
+    '+'  сдвиг, и переход в состояние 79
+    '-'  сдвиг, и переход в состояние 80
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+    and  сдвиг, и переход в состояние 84
+    or   сдвиг, и переход в состояние 85
+    eqt  сдвиг, и переход в состояние 86
+    grt  сдвиг, и переход в состояние 87
+    geq  сдвиг, и переход в состояние 88
+    lrt  сдвиг, и переход в состояние 89
+    leq  сдвиг, и переход в состояние 90
+    neq  сдвиг, и переход в состояние 91
+    ';'  сдвиг, и переход в состояние 128
 
 
 Состояние 95
 
-   23 freadln: let symbol equal readln '(' ')' ';' .
+   36 return_expr: RETURN expr ';' .
 
-    $default  вывод с использованием правила 23 (freadln)
+    $default  вывод с использованием правила 36 (return_expr)
 
 
 Состояние 96
 
-   14 if_statement: IF expr '{' statements '}' ELSE '{' . statements '}'
+   22 array_or_slice: '[' ident ']' '[' ident . ';' number ']'
 
-    let          сдвиг, и переход в состояние 9
-    IF           сдвиг, и переход в состояние 10
-    WHILE        сдвиг, и переход в состояние 11
-    println      сдвиг, и переход в состояние 12
-    readln       сдвиг, и переход в состояние 13
-    symbol       сдвиг, и переход в состояние 14
-    commentline  сдвиг, и переход в состояние 15
-
-    $default  вывод с использованием правила 4 (statements)
-
-    statements       переход в состояние 98
-    statement        переход в состояние 17
-    assignment       переход в состояние 18
-    if_statement     переход в состояние 19
-    while_statement  переход в состояние 20
-    io_func          переход в состояние 21
-    fprintln         переход в состояние 22
-    freadln          переход в состояние 23
-    comments         переход в состояние 24
+    ';'  сдвиг, и переход в состояние 129
 
 
 Состояние 97
 
-   15 if_statement: IF expr '{' statements '}' ELSE if_statement .
+   38 assignment: LET MUT ident '=' . expr ';'
 
-    $default  вывод с использованием правила 15 (if_statement)
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
+
+    expr                 переход в состояние 130
+    macro_function_call  переход в состояние 65
+    function_call        переход в состояние 66
 
 
 Состояние 98
 
-   14 if_statement: IF expr '{' statements '}' ELSE '{' statements . '}'
+   37 assignment: LET ident '=' expr . ';'
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
 
-    '}'  сдвиг, и переход в состояние 99
+    '+'  сдвиг, и переход в состояние 79
+    '-'  сдвиг, и переход в состояние 80
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+    and  сдвиг, и переход в состояние 84
+    or   сдвиг, и переход в состояние 85
+    eqt  сдвиг, и переход в состояние 86
+    grt  сдвиг, и переход в состояние 87
+    geq  сдвиг, и переход в состояние 88
+    lrt  сдвиг, и переход в состояние 89
+    leq  сдвиг, и переход в состояние 90
+    neq  сдвиг, и переход в состояние 91
+    ';'  сдвиг, и переход в состояние 131
 
 
 Состояние 99
 
-   14 if_statement: IF expr '{' statements '}' ELSE '{' statements '}' .
+   74 non_brackets_expr: number .
 
-    $default  вывод с использованием правила 14 (if_statement)
+    $default  вывод с использованием правила 74 (non_brackets_expr)
+
+
+Состояние 100
+
+   64 function_call: ident . '(' maybe_args ')'
+   76 non_brackets_expr: ident .
+
+    '('  сдвиг, и переход в состояние 76
+
+    $default  вывод с использованием правила 76 (non_brackets_expr)
+
+
+Состояние 101
+
+   79 non_brackets_expr: string .
+
+    $default  вывод с использованием правила 79 (non_brackets_expr)
+
+
+Состояние 102
+
+   73 expr_for_passing: '(' . only_with_brackets_expr_additional_brackets ')'
+
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
+    '('          сдвиг, и переход в состояние 132
+
+    expr                                         переход в состояние 133
+    macro_function_call                          переход в состояние 65
+    function_call                                переход в состояние 66
+    only_with_brackets_expr_additional_brackets  переход в состояние 134
+
+
+Состояние 103
+
+   70 arg: '&' . expr_for_passing
+   71    | '&' . MUT expr_for_passing
+
+    MUT          сдвиг, и переход в состояние 135
+    number       сдвиг, и переход в состояние 99
+    ident        сдвиг, и переход в состояние 100
+    string       сдвиг, и переход в состояние 101
+    macro_ident  сдвиг, и переход в состояние 62
+    '('          сдвиг, и переход в состояние 102
+    '['          сдвиг, и переход в состояние 24
+
+    array_or_slice       переход в состояние 104
+    macro_function_call  переход в состояние 105
+    function_call        переход в состояние 106
+    expr_for_passing     переход в состояние 136
+    non_brackets_expr    переход в состояние 111
+
+
+Состояние 104
+
+   75 non_brackets_expr: array_or_slice .
+
+    $default  вывод с использованием правила 75 (non_brackets_expr)
+
+
+Состояние 105
+
+   78 non_brackets_expr: macro_function_call .
+
+    $default  вывод с использованием правила 78 (non_brackets_expr)
+
+
+Состояние 106
+
+   77 non_brackets_expr: function_call .
+
+    $default  вывод с использованием правила 77 (non_brackets_expr)
+
+
+Состояние 107
+
+   64 function_call: ident '(' maybe_args . ')'
+
+    ')'  сдвиг, и переход в состояние 137
+
+
+Состояние 108
+
+   65 maybe_args: args .
+   68 args: args . ',' arg
+
+    ','  сдвиг, и переход в состояние 138
+
+    $default  вывод с использованием правила 65 (maybe_args)
+
+
+Состояние 109
+
+   67 args: arg .
+
+    $default  вывод с использованием правила 67 (args)
+
+
+Состояние 110
+
+   69 arg: expr_for_passing .
+
+    $default  вывод с использованием правила 69 (arg)
+
+
+Состояние 111
+
+   72 expr_for_passing: non_brackets_expr .
+
+    $default  вывод с использованием правила 72 (expr_for_passing)
+
+
+Состояние 112
+
+   63 macro_function_call: macro_ident '(' maybe_args . ')'
+
+    ')'  сдвиг, и переход в состояние 139
+
+
+Состояние 113
+
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   52     | expr '+' expr .
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
+
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+
+    $default  вывод с использованием правила 52 (expr)
+
+
+Состояние 114
+
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   54     | expr '-' expr .
+   55     | expr . '/' expr
+   56     | expr . '%' expr
+
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+
+    $default  вывод с использованием правила 54 (expr)
+
+
+Состояние 115
+
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   53     | expr '*' expr .
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
+
+    $default  вывод с использованием правила 53 (expr)
+
+
+Состояние 116
+
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   55     | expr '/' expr .
+   56     | expr . '%' expr
+
+    $default  вывод с использованием правила 55 (expr)
+
+
+Состояние 117
+
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
+   56     | expr '%' expr .
+
+    $default  вывод с использованием правила 56 (expr)
+
+
+Состояние 118
+
+   44 expr: expr . and expr
+   44     | expr and expr .
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
+
+    '+'  сдвиг, и переход в состояние 79
+    '-'  сдвиг, и переход в состояние 80
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+    eqt  сдвиг, и переход в состояние 86
+    grt  сдвиг, и переход в состояние 87
+    geq  сдвиг, и переход в состояние 88
+    lrt  сдвиг, и переход в состояние 89
+    leq  сдвиг, и переход в состояние 90
+    neq  сдвиг, и переход в состояние 91
+
+    $default  вывод с использованием правила 44 (expr)
+
+
+Состояние 119
+
+   44 expr: expr . and expr
+   45     | expr . or expr
+   45     | expr or expr .
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
+
+    '+'  сдвиг, и переход в состояние 79
+    '-'  сдвиг, и переход в состояние 80
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+    eqt  сдвиг, и переход в состояние 86
+    grt  сдвиг, и переход в состояние 87
+    geq  сдвиг, и переход в состояние 88
+    lrt  сдвиг, и переход в состояние 89
+    leq  сдвиг, и переход в состояние 90
+    neq  сдвиг, и переход в состояние 91
+
+    $default  вывод с использованием правила 45 (expr)
+
+
+Состояние 120
+
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   46     | expr eqt expr .
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
+
+    '+'  сдвиг, и переход в состояние 79
+    '-'  сдвиг, и переход в состояние 80
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+
+    $default  вывод с использованием правила 46 (expr)
+
+
+Состояние 121
+
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   48     | expr grt expr .
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
+
+    '+'  сдвиг, и переход в состояние 79
+    '-'  сдвиг, и переход в состояние 80
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+
+    $default  вывод с использованием правила 48 (expr)
+
+
+Состояние 122
+
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   49     | expr geq expr .
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
+
+    '+'  сдвиг, и переход в состояние 79
+    '-'  сдвиг, и переход в состояние 80
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+
+    $default  вывод с использованием правила 49 (expr)
+
+
+Состояние 123
+
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   50     | expr lrt expr .
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
+
+    '+'  сдвиг, и переход в состояние 79
+    '-'  сдвиг, и переход в состояние 80
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+
+    $default  вывод с использованием правила 50 (expr)
+
+
+Состояние 124
+
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   51     | expr leq expr .
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
+
+    '+'  сдвиг, и переход в состояние 79
+    '-'  сдвиг, и переход в состояние 80
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+
+    $default  вывод с использованием правила 51 (expr)
+
+
+Состояние 125
+
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   47     | expr neq expr .
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
+
+    '+'  сдвиг, и переход в состояние 79
+    '-'  сдвиг, и переход в состояние 80
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+
+    $default  вывод с использованием правила 47 (expr)
+
+
+Состояние 126
+
+   40 if_statement: IF expr '{' statements . '}'
+   41             | IF expr '{' statements . '}' ELSE '{' statements '}'
+   42             | IF expr '{' statements . '}' ELSE if_statement
+
+    '}'  сдвиг, и переход в состояние 140
+
+
+Состояние 127
+
+   43 while_statement: WHILE expr '{' statements . '}'
+
+    '}'  сдвиг, и переход в состояние 141
+
+
+Состояние 128
+
+   39 assignment: ident '=' expr ';' .
+
+    $default  вывод с использованием правила 39 (assignment)
+
+
+Состояние 129
+
+   22 array_or_slice: '[' ident ']' '[' ident ';' . number ']'
+
+    number  сдвиг, и переход в состояние 142
+
+
+Состояние 130
+
+   38 assignment: LET MUT ident '=' expr . ';'
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
+
+    '+'  сдвиг, и переход в состояние 79
+    '-'  сдвиг, и переход в состояние 80
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+    and  сдвиг, и переход в состояние 84
+    or   сдвиг, и переход в состояние 85
+    eqt  сдвиг, и переход в состояние 86
+    grt  сдвиг, и переход в состояние 87
+    geq  сдвиг, и переход в состояние 88
+    lrt  сдвиг, и переход в состояние 89
+    leq  сдвиг, и переход в состояние 90
+    neq  сдвиг, и переход в состояние 91
+    ';'  сдвиг, и переход в состояние 143
+
+
+Состояние 131
+
+   37 assignment: LET ident '=' expr ';' .
+
+    $default  вывод с использованием правила 37 (assignment)
+
+
+Состояние 132
+
+   81 only_with_brackets_expr_additional_brackets: '(' . only_with_brackets_expr_additional_brackets ')'
+
+    number       сдвиг, и переход в состояние 59
+    ident        сдвиг, и переход в состояние 60
+    string       сдвиг, и переход в состояние 61
+    macro_ident  сдвиг, и переход в состояние 62
+    '-'          сдвиг, и переход в состояние 63
+    '('          сдвиг, и переход в состояние 132
+
+    expr                                         переход в состояние 133
+    macro_function_call                          переход в состояние 65
+    function_call                                переход в состояние 66
+    only_with_brackets_expr_additional_brackets  переход в состояние 144
+
+
+Состояние 133
+
+   44 expr: expr . and expr
+   45     | expr . or expr
+   46     | expr . eqt expr
+   47     | expr . neq expr
+   48     | expr . grt expr
+   49     | expr . geq expr
+   50     | expr . lrt expr
+   51     | expr . leq expr
+   52     | expr . '+' expr
+   53     | expr . '*' expr
+   54     | expr . '-' expr
+   55     | expr . '/' expr
+   56     | expr . '%' expr
+   80 only_with_brackets_expr_additional_brackets: expr .
+
+    '+'  сдвиг, и переход в состояние 79
+    '-'  сдвиг, и переход в состояние 80
+    '*'  сдвиг, и переход в состояние 81
+    '/'  сдвиг, и переход в состояние 82
+    '%'  сдвиг, и переход в состояние 83
+    and  сдвиг, и переход в состояние 84
+    or   сдвиг, и переход в состояние 85
+    eqt  сдвиг, и переход в состояние 86
+    grt  сдвиг, и переход в состояние 87
+    geq  сдвиг, и переход в состояние 88
+    lrt  сдвиг, и переход в состояние 89
+    leq  сдвиг, и переход в состояние 90
+    neq  сдвиг, и переход в состояние 91
+
+    $default  вывод с использованием правила 80 (only_with_brackets_expr_additional_brackets)
+
+
+Состояние 134
+
+   73 expr_for_passing: '(' only_with_brackets_expr_additional_brackets . ')'
+
+    ')'  сдвиг, и переход в состояние 145
+
+
+Состояние 135
+
+   71 arg: '&' MUT . expr_for_passing
+
+    number       сдвиг, и переход в состояние 99
+    ident        сдвиг, и переход в состояние 100
+    string       сдвиг, и переход в состояние 101
+    macro_ident  сдвиг, и переход в состояние 62
+    '('          сдвиг, и переход в состояние 102
+    '['          сдвиг, и переход в состояние 24
+
+    array_or_slice       переход в состояние 104
+    macro_function_call  переход в состояние 105
+    function_call        переход в состояние 106
+    expr_for_passing     переход в состояние 146
+    non_brackets_expr    переход в состояние 111
+
+
+Состояние 136
+
+   70 arg: '&' expr_for_passing .
+
+    $default  вывод с использованием правила 70 (arg)
+
+
+Состояние 137
+
+   64 function_call: ident '(' maybe_args ')' .
+
+    $default  вывод с использованием правила 64 (function_call)
+
+
+Состояние 138
+
+   68 args: args ',' . arg
+
+    number       сдвиг, и переход в состояние 99
+    ident        сдвиг, и переход в состояние 100
+    string       сдвиг, и переход в состояние 101
+    macro_ident  сдвиг, и переход в состояние 62
+    '('          сдвиг, и переход в состояние 102
+    '&'          сдвиг, и переход в состояние 103
+    '['          сдвиг, и переход в состояние 24
+
+    array_or_slice       переход в состояние 104
+    macro_function_call  переход в состояние 105
+    function_call        переход в состояние 106
+    arg                  переход в состояние 147
+    expr_for_passing     переход в состояние 110
+    non_brackets_expr    переход в состояние 111
+
+
+Состояние 139
+
+   63 macro_function_call: macro_ident '(' maybe_args ')' .
+
+    $default  вывод с использованием правила 63 (macro_function_call)
+
+
+Состояние 140
+
+   40 if_statement: IF expr '{' statements '}' .
+   41             | IF expr '{' statements '}' . ELSE '{' statements '}'
+   42             | IF expr '{' statements '}' . ELSE if_statement
+
+    ELSE  сдвиг, и переход в состояние 148
+
+    $default  вывод с использованием правила 40 (if_statement)
+
+
+Состояние 141
+
+   43 while_statement: WHILE expr '{' statements '}' .
+
+    $default  вывод с использованием правила 43 (while_statement)
+
+
+Состояние 142
+
+   22 array_or_slice: '[' ident ']' '[' ident ';' number . ']'
+
+    ']'  сдвиг, и переход в состояние 149
+
+
+Состояние 143
+
+   38 assignment: LET MUT ident '=' expr ';' .
+
+    $default  вывод с использованием правила 38 (assignment)
+
+
+Состояние 144
+
+   81 only_with_brackets_expr_additional_brackets: '(' only_with_brackets_expr_additional_brackets . ')'
+
+    ')'  сдвиг, и переход в состояние 150
+
+
+Состояние 145
+
+   73 expr_for_passing: '(' only_with_brackets_expr_additional_brackets ')' .
+
+    $default  вывод с использованием правила 73 (expr_for_passing)
+
+
+Состояние 146
+
+   71 arg: '&' MUT expr_for_passing .
+
+    $default  вывод с использованием правила 71 (arg)
+
+
+Состояние 147
+
+   68 args: args ',' arg .
+
+    $default  вывод с использованием правила 68 (args)
+
+
+Состояние 148
+
+   41 if_statement: IF expr '{' statements '}' ELSE . '{' statements '}'
+   42             | IF expr '{' statements '}' ELSE . if_statement
+
+    IF   сдвиг, и переход в состояние 41
+    '{'  сдвиг, и переход в состояние 151
+
+    if_statement  переход в состояние 152
+
+
+Состояние 149
+
+   22 array_or_slice: '[' ident ']' '[' ident ';' number ']' .
+
+    $default  вывод с использованием правила 22 (array_or_slice)
+
+
+Состояние 150
+
+   81 only_with_brackets_expr_additional_brackets: '(' only_with_brackets_expr_additional_brackets ')' .
+
+    $default  вывод с использованием правила 81 (only_with_brackets_expr_additional_brackets)
+
+
+Состояние 151
+
+   41 if_statement: IF expr '{' statements '}' ELSE '{' . statements '}'
+
+    LET          сдвиг, и переход в состояние 40
+    IF           сдвиг, и переход в состояние 41
+    WHILE        сдвиг, и переход в состояние 42
+    ident        сдвиг, и переход в состояние 43
+    commentline  сдвиг, и переход в состояние 44
+    RETURN       сдвиг, и переход в состояние 45
+
+    $default  вывод с использованием правила 29 (statements)
+
+    statements       переход в состояние 153
+    statement        переход в состояние 47
+    return_expr      переход в состояние 48
+    assignment       переход в состояние 49
+    if_statement     переход в состояние 50
+    while_statement  переход в состояние 51
+    comments         переход в состояние 52
+
+
+Состояние 152
+
+   42 if_statement: IF expr '{' statements '}' ELSE if_statement .
+
+    $default  вывод с использованием правила 42 (if_statement)
+
+
+Состояние 153
+
+   41 if_statement: IF expr '{' statements '}' ELSE '{' statements . '}'
+
+    '}'  сдвиг, и переход в состояние 154
+
+
+Состояние 154
+
+   41 if_statement: IF expr '{' statements '}' ELSE '{' statements '}' .
+
+    $default  вывод с использованием правила 41 (if_statement)
