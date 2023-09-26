@@ -1,6 +1,8 @@
 fn func1() {
-    let x = 1;
-  let y = 1;
+    let x = ((1 + 2) + 3);
+  let y = 1 + (1 + 2) + 3;
+	let i = {let z = 1337;a};
+	let z = 1 + (2) - 3;
   if x != y {
     let z = 1337;
   }

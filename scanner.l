@@ -39,7 +39,10 @@ int yyline = 1;
 "}" { return '}'; }
 "(" { return '('; }
 ")" { return ')'; }
+"[" { return '[';}
+"]" { return ']';}
 ";" { return ';'; }
+"," { return ','; }
 
 "+" { return '+'; }
 "-" { return '-'; }

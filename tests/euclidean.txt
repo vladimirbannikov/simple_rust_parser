@@ -2,7 +2,7 @@
 
 fn main() {
   let a = 21;
-  let b = 105;
+  let b: i32 = 105;
 
   // println!("Please insert value of 'a': ");
   read_line(a);

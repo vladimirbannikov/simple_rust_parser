@@ -20,7 +20,7 @@
 
 %token			'=' commentline quote
 
-%token			'(' ')' '{' '}' ';'
+%token			'(' ')' '{' '}' '[' ']' ';'
 
 %token 			':' '&' RIGHT_ARROW
 
@@ -29,8 +29,8 @@
 
 %left			and or '!'
 %left			lrt grt eqt neq leq geq
-%left			'+' '-'
-%left			'*' '/' '%' 		
+%left			'*' '/' '%' 
+%left			'+' '-'		
 			
 			
 %start crate;
@@ -54,11 +54,11 @@ global_item:
 
 function:
 	FN ident '(' maybe_params ')' maybe_return_type  '{' statements '}'
+	| FN ident '(' maybe_params ')' maybe_return_type  '{' return_expression '}'
 ;
 
 maybe_params
 	: params
-//	| params ','
 	| %empty
 ;
 
@@ -90,14 +90,28 @@ maybe_mut_or_const
 
 raw_type:
 	ident
-	| array_or_slice
+	| array_or_slice_type
 ;
 
-array_or_slice:
+array_or_slice_type:
 	'[' ident ']'
 	'[' ident ';' number ']'
 ;
 
+array_rvalue:
+	'[' maybe_exprs ']'
+	| '[' expr ';' number ']'
+;
+
+array_subscription:
+	ident '[' expr ']'
+;
+
+maybe_exprs:
+	expr
+	| expr ',' expr
+	| %empty
+;
 
 maybe_return_type:
 	RIGHT_ARROW func_return_type
@@ -109,12 +123,18 @@ func_return_type:
 	| '&' raw_type
 	| '&' MUT raw_type
 ;
-		
-		
-statements:   	
-	statement statements 
-	|	%empty
+
+/*
+{ x + 1 }
+*/
+return_expression:
+	statements expr
 ;
+
+statements:   	
+	statements statement 
+	|	%empty
+;	
   
 		
 statement:  
@@ -123,76 +143,142 @@ statement:
 	| if_statement 
 	| while_statement 
 	| comments 
-	| return_expr
+	| return_token_expr
+	| '{' statements '}'
 ;
 
-return_expr:
+return_token_expr:
 	RETURN ';';
 	| RETURN expr ';'
 		
 		
 assignment:
-		LET ident '=' expr ';' 
-	| 	LET MUT ident '=' expr ';' 
-	| 	ident '=' expr ';' 
+	LET lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'  
+	| LET MUT lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'
+	| '*' lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'
+	| lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'
 ;
-         
+
+lvalue:
+	ident
+	| array_subscription 
+;
+
+maybe_rvalue_prefix:
+	'&'
+	| '&' MUT
+	| %empty
+;
+
+rvalue:
+	expr
+	| array_rvalue
+	| '{' return_expression '}'
+	| '{' statements '}'
+;
+
+
+maybe_assignment_type:
+	':' raw_type
+	| %empty
+ ;
 		
 		
 if_statement:
 		IF expr '{' statements '}' 
 	| 	IF expr '{' statements '}' ELSE '{' statements '}' 
 	| 	IF expr '{' statements '}' ELSE if_statement 
-;
-         	
-		
+;		
+
 
 while_statement:
 		WHILE expr '{' statements '}' 
 ; 
-		
 
 
 expr:
-	expr and expr 
-	| expr or  expr 
-	| expr eqt expr 
-	| expr neq expr 
-	| expr grt expr 
-	| expr geq expr 
-	| expr lrt expr 
-	| expr leq expr 
-		
-	| expr '+' expr 
-	| expr '*' expr 
-	| expr '-' expr 
-	| expr '/' expr 
-	| expr '%' expr 
+	expr_binary_operation
+;
 
-	| number 
+//expr_comparison_operation:
+//	expr_comparison_operation comparison_operator expr_comparison_operation
+//
+//	| expr_token
+//;
+
+
+expr_binary_operation:
+	expr_binary_operation and expr_binary_operation
+	| expr_binary_operation or expr_binary_operation
+	| expr_binary_operation eqt expr_binary_operation
+	| expr_binary_operation neq expr_binary_operation
+	| expr_binary_operation '+' expr_binary_operation
+	| expr_binary_operation '-' expr_binary_operation
+	| expr_binary_operation '*' expr_binary_operation
+	| expr_binary_operation '/' expr_binary_operation
+	| expr_binary_operation '%' expr_binary_operation
+	| expr_binary_operation grt expr_binary_operation
+	| expr_binary_operation geq expr_binary_operation
+	| expr_binary_operation lrt expr_binary_operation
+	| expr_binary_operation leq expr_binary_operation
+	| '(' expr_binary_operation ')'
+	| expr_token
+;
+
+/*binary_operator:
+	default_binary_operator
+	| comparison_operator
+;
+
+default_binary_operator:
+	'+'
+	| '-'
+	| '*'
+	| '/'
+	| '%'
+	| and
+	| or
+	| eqt
+	| neq
+;
+
+comparison_operator:
+	grt
+	| geq
+	| lrt
+	| leq
+;*/
+
+expr_token:
+	number 
 	| '-' number 
 	| ident 
 	| string
 	| function_call
 	| macro_function_call
+	| array_subscription
 ;
 
 macro_function_call:
 	macro_ident '(' maybe_args ')'
 
+
 function_call:
 	ident '(' maybe_args ')'
 ;
 
-maybe_args
-	: args
+
+maybe_args:
+	args
 	| %empty
 ;
+
 
 args
 	: arg                
 	| args ',' arg     
 ;
+
 
 arg:
 	expr_for_passing
@@ -200,24 +286,21 @@ arg:
 	| '&' MUT expr_for_passing
 ;
 
+
 expr_for_passing:
 	non_brackets_expr
-	| '(' only_with_brackets_expr_additional_brackets ')'
+	| '(' expr ')'
 ;
+
 
 non_brackets_expr:
 	number
-	| array_or_slice
+	| array_rvalue
 	| ident
 	| function_call
 	| macro_function_call
 	| string
 ;
-
-only_with_brackets_expr_additional_brackets:
-	expr
-	| '(' only_with_brackets_expr_additional_brackets ')'
-
 
 
 comments:   	commentline
