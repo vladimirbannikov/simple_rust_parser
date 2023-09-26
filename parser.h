@@ -65,44 +65,31 @@ extern int yydebug;
     IF = 261,
     ELSE = 262,
     WHILE = 263,
-    println = 264,
-    readln = 265,
-    number = 266,
-    ident = 267,
-    string = 268,
-    macro_ident = 269,
-    and = 270,
-    or = 271,
-    eqt = 272,
-    grt = 273,
-    geq = 274,
-    lrt = 275,
-    leq = 276,
-    neq = 277,
-    commentline = 278,
-    quote = 279,
-    RIGHT_ARROW = 280,
-    CONST = 281,
-    RETURN = 282,
-    BREAK = 283,
-    CONTINUE = 284
+    number = 264,
+    ident = 265,
+    string = 266,
+    macro_ident = 267,
+    and = 268,
+    or = 269,
+    eqt = 270,
+    grt = 271,
+    geq = 272,
+    lrt = 273,
+    leq = 274,
+    neq = 275,
+    commentline = 276,
+    quote = 277,
+    RIGHT_ARROW = 278,
+    CONST = 279,
+    RETURN = 280,
+    BREAK = 281,
+    CONTINUE = 282
   };
 #endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-
-union YYSTYPE
-{
-#line 37 "parser.y" /* yacc.c:1909  */
-
-    int number;
-    char* string;
-
-#line 103 "parser.h" /* yacc.c:1909  */
-};
-
-typedef union YYSTYPE YYSTYPE;
+typedef int YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif

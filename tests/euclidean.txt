@@ -8,7 +8,7 @@ fn main() {
   read_line(a);
 
   // println!("Please insert value of 'b': ");
-  read_line(b);
+  read_line((((b))));
 
   while b != 0 {
     t = b;

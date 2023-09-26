@@ -12,7 +12,7 @@
 			
 			
 %token			FN
-%token			LET MUT IF ELSE WHILE println readln
+%token			LET MUT IF ELSE WHILE
 			
 %token			number ident string macro_ident
 %token			'+' '-' '*' '/' '%'
@@ -30,21 +30,9 @@
 %left			and or '!'
 %left			lrt grt eqt neq leq geq
 %left			'+' '-'
-%left			'*' '/' '%' 
-
+%left			'*' '/' '%' 		
 			
 			
-%union {
-    int number;
-    char* string;
-}		
-			
-%type	<number>	number
-%type	<string>	string
-					
-			
-			
-
 %start crate;
 			
 			
@@ -129,8 +117,9 @@ statements:
 ;
   
 		
-statement:   	
-	assignment 
+statement:  
+	expr ';'
+	| assignment 
 	| if_statement 
 	| while_statement 
 	| comments 
