@@ -6,7 +6,7 @@
 //fn1(1,2,a,fn2(1), & 1q, 2);
 //   weq!!! test_arr[1+1] = 0;sada
 //}///////
-fn a(){a
+fn a(){
 test_arr[1] = test_arr[2];
 //let mut 122 test_arr = [1, 3, 4 + 1 + 3 + 4];
 fn1(1,2,a,fn2(1), & 1, 2);

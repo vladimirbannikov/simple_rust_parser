@@ -14,7 +14,7 @@
 %token			FN
 %token			LET MUT IF ELSE WHILE LOOP FOR IN
 			
-%token			number ident string macro_ident
+%token			number real_number ident string macro_ident
 %token			'+' '-' '*' '/' '%'
 %token			'!' and or eqt grt geq lrt leq neq
 
@@ -133,6 +133,7 @@ func_return_type:
 */
 return_expression:
 	statements expr
+	| statements array_rvalue
 ;
 
 statements:   	
@@ -154,6 +155,7 @@ statement:
 return_token_expr:
 	RETURN ';';
 	| RETURN expr ';'
+	| RETURN array_rvalue ';'
 		
 		
 assignment:
@@ -204,10 +206,13 @@ cycle_statement:
 
 
 for_range:
+	range
+;
+
+range:
 	expr DOTDOT expr
 	| expr DOTDOT '=' expr
 ;
-
 
 statements_in_cycle:   	
 	statements_in_cycle statement_in_cycle 
@@ -283,6 +288,8 @@ comparison_operator:
 expr_token:
 	number 
 	| '-' number 
+	| real_number
+	| '-' real_number
 	| ident 
 	| string
 	| function_call
@@ -331,6 +338,7 @@ non_brackets_expr:
 	| function_call
 	| macro_function_call
 	| string
+	//| range
 ;
 
 

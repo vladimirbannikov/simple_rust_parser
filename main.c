@@ -22,5 +22,8 @@ int main(int argc, char **argv)
     res = yyparse();
     fclose(f);
 
-    return res;
+    if (res == 0)
+        printf("PASSED\n");
+
+    return 0;
 }

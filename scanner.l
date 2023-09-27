@@ -29,6 +29,7 @@ int yyline = 1;
 "for" { return FOR; }
 "in" { return IN; }
 
+"." { return '.'; }
 ".." { return DOTDOT; }
 
 "!" { return '!'; }
@@ -68,8 +69,9 @@ int yyline = 1;
 
 
 [0-9]+ { return number; }
+[0-9][0-9_]*\.[0-9_]*([eE][-\+]?[0-9_]+)? { return real_number; }
 [a-zA-Z_][a-zA-Z_0-9]* {  return ident; }
- [a-zA-Z_][a-zA-Z_0-9]*! { return macro_ident; }
+[a-zA-Z_][a-zA-Z_0-9]*! { return macro_ident; }
 \".*\" { return string; }
 
 
