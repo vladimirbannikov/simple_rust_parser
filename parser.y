@@ -12,7 +12,7 @@
 			
 			
 %token			FN
-%token			LET MUT IF ELSE WHILE
+%token			LET MUT IF ELSE WHILE LOOP
 			
 %token			number ident string macro_ident
 %token			'+' '-' '*' '/' '%'
@@ -24,7 +24,7 @@
 
 %token 			':' '&' RIGHT_ARROW
 
-%token			CONST RETURN BREAK CONTINUE
+%token			CONST RETURN BREAK CONTINUE 
 			
 
 %left			and or '!'
@@ -190,14 +190,15 @@ maybe_assignment_type:
 		
 		
 if_statement:
-		IF expr '{' statements '}' 
-	| 	IF expr '{' statements '}' ELSE '{' statements '}' 
-	| 	IF expr '{' statements '}' ELSE if_statement 
+	IF expr '{' statements '}' 
+	| IF expr '{' statements '}' ELSE '{' statements '}' 
+	| IF expr '{' statements '}' ELSE if_statement 
 ;		
 
 
 while_statement:
-		WHILE expr '{' statements_in_while '}' 
+	WHILE expr '{' statements_in_while '}' 
+	| LOOP '{' statements_in_while '}'
 ; 
 
 statements_in_while:   	

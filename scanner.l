@@ -23,7 +23,9 @@ int yyline = 1;
 "false" { return number; }
 "if" { return IF; }
 "else" { return ELSE; }
+
 "while" { return WHILE; }
+"loop" { return LOOP; }
 
 "!" { return '!'; }
 "&&" { return and; }
