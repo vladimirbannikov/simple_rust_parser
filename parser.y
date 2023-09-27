@@ -12,7 +12,7 @@
 			
 			
 %token			FN
-%token			LET MUT IF ELSE WHILE LOOP
+%token			LET MUT IF ELSE WHILE LOOP FOR IN
 			
 %token			number ident string macro_ident
 %token			'+' '-' '*' '/' '%'
@@ -24,7 +24,7 @@
 
 %token 			':' '&' RIGHT_ARROW
 
-%token			CONST RETURN BREAK CONTINUE 
+%token			CONST RETURN BREAK CONTINUE DOTDOT
 			
 
 %left			and or '!'
@@ -145,7 +145,7 @@ statement:
 	expr ';'
 	| assignment 
 	| if_statement 
-	| while_statement 
+	| cycle_statement 
 	| comments 
 	| return_token_expr
 	| '{' statements '}'
@@ -196,24 +196,32 @@ if_statement:
 ;		
 
 
-while_statement:
-	WHILE expr '{' statements_in_while '}' 
-	| LOOP '{' statements_in_while '}'
+cycle_statement:
+	WHILE expr '{' statements_in_cycle '}' 
+	| LOOP '{' statements_in_cycle '}'
+	| FOR ident IN for_range '{' statements_in_cycle '}'
 ; 
 
-statements_in_while:   	
-	statements_in_while statement_in_while 
+
+for_range:
+	expr DOTDOT expr
+	| expr DOTDOT '=' expr
+;
+
+
+statements_in_cycle:   	
+	statements_in_cycle statement_in_cycle 
 	|	%empty
 ;
 
-statement_in_while:  
+statement_in_cycle:  
 	expr ';'
 	| assignment 
 	| if_statement 
-	| while_statement 
+	| cycle_statement 
 	| comments 
 	| return_token_expr
-	| '{' statements_in_while '}'
+	| '{' statements_in_cycle '}'
 	| BREAK ';'
 	| CONTINUE ';'
 ;

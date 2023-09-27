@@ -26,6 +26,10 @@ int yyline = 1;
 
 "while" { return WHILE; }
 "loop" { return LOOP; }
+"for" { return FOR; }
+"in" { return IN; }
+
+".." { return DOTDOT; }
 
 "!" { return '!'; }
 "&&" { return and; }
