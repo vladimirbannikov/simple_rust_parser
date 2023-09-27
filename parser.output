@@ -2,8 +2,6 @@
 
    '!'
    quote
-   BREAK
-   CONTINUE
 
 
 Грамматика
@@ -43,16 +41,17 @@
    21 raw_type: ident
    22         | array_or_slice_type
 
-   23 array_or_slice_type: '[' ident ']' '[' ident ';' number ']'
+   23 array_or_slice_type: '[' ident ']'
 
    24 array_rvalue: '[' maybe_exprs ']'
-   25             | '[' expr ';' number ']'
 
-   26 array_subscription: ident '[' expr ']'
+   25 array_indexing: ident '[' expr ']'
 
-   27 maybe_exprs: expr
-   28            | expr ',' expr
-   29            | %empty
+   26 maybe_exprs: exprs
+   27            | %empty
+
+   28 exprs: expr
+   29      | exprs ',' expr
 
    30 maybe_return_type: RIGHT_ARROW func_return_type
    31                  | %empty
@@ -83,7 +82,7 @@
    50           | lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'
 
    51 lvalue: ident
-   52       | array_subscription
+   52       | array_indexing
 
    53 maybe_rvalue_prefix: '&'
    54                    | '&' MUT
@@ -101,107 +100,120 @@
    63             | IF expr '{' statements '}' ELSE '{' statements '}'
    64             | IF expr '{' statements '}' ELSE if_statement
 
-   65 while_statement: WHILE expr '{' statements '}'
+   65 while_statement: WHILE expr '{' statements_in_while '}'
 
-   66 expr: expr_binary_operation
+   66 statements_in_while: statements_in_while statement_in_while
+   67                    | %empty
 
-   67 expr_binary_operation: expr_binary_operation and expr_binary_operation
-   68                      | expr_binary_operation or expr_binary_operation
-   69                      | expr_binary_operation eqt expr_binary_operation
-   70                      | expr_binary_operation neq expr_binary_operation
-   71                      | expr_binary_operation '+' expr_binary_operation
-   72                      | expr_binary_operation '-' expr_binary_operation
-   73                      | expr_binary_operation '*' expr_binary_operation
-   74                      | expr_binary_operation '/' expr_binary_operation
-   75                      | expr_binary_operation '%' expr_binary_operation
-   76                      | expr_binary_operation grt expr_binary_operation
-   77                      | expr_binary_operation geq expr_binary_operation
-   78                      | expr_binary_operation lrt expr_binary_operation
-   79                      | expr_binary_operation leq expr_binary_operation
-   80                      | '(' expr_binary_operation ')'
-   81                      | expr_token
+   68 statement_in_while: expr ';'
+   69                   | assignment
+   70                   | if_statement
+   71                   | while_statement
+   72                   | comments
+   73                   | return_token_expr
+   74                   | '{' statements_in_while '}'
+   75                   | BREAK ';'
+   76                   | CONTINUE ';'
 
-   82 expr_token: number
-   83           | '-' number
-   84           | ident
-   85           | string
-   86           | function_call
-   87           | macro_function_call
-   88           | array_subscription
+   77 expr: expr_binary_operation
 
-   89 macro_function_call: macro_ident '(' maybe_args ')'
+   78 expr_binary_operation: expr_binary_operation and expr_binary_operation
+   79                      | expr_binary_operation or expr_binary_operation
+   80                      | expr_binary_operation eqt expr_binary_operation
+   81                      | expr_binary_operation neq expr_binary_operation
+   82                      | expr_binary_operation '+' expr_binary_operation
+   83                      | expr_binary_operation '-' expr_binary_operation
+   84                      | expr_binary_operation '*' expr_binary_operation
+   85                      | expr_binary_operation '/' expr_binary_operation
+   86                      | expr_binary_operation '%' expr_binary_operation
+   87                      | expr_binary_operation grt expr_binary_operation
+   88                      | expr_binary_operation geq expr_binary_operation
+   89                      | expr_binary_operation lrt expr_binary_operation
+   90                      | expr_binary_operation leq expr_binary_operation
+   91                      | '(' expr_binary_operation ')'
+   92                      | expr_token
 
-   90 function_call: ident '(' maybe_args ')'
+   93 expr_token: number
+   94           | '-' number
+   95           | ident
+   96           | string
+   97           | function_call
+   98           | macro_function_call
+   99           | array_indexing
 
-   91 maybe_args: args
-   92           | %empty
+  100 macro_function_call: macro_ident '(' maybe_args ')'
 
-   93 args: arg
-   94     | args ',' arg
+  101 function_call: ident '(' maybe_args ')'
 
-   95 arg: expr_for_passing
-   96    | '&' expr_for_passing
-   97    | '&' MUT expr_for_passing
+  102 maybe_args: args
+  103           | %empty
 
-   98 expr_for_passing: non_brackets_expr
-   99                 | '(' expr ')'
+  104 args: arg
+  105     | args ',' arg
 
-  100 non_brackets_expr: number
-  101                  | array_rvalue
-  102                  | ident
-  103                  | function_call
-  104                  | macro_function_call
-  105                  | string
+  106 arg: expr
+  107    | '&' expr_for_passing
+  108    | '&' MUT expr_for_passing
 
-  106 comments: commentline
+  109 expr_for_passing: non_brackets_expr
+  110                 | '(' expr ')'
+
+  111 non_brackets_expr: number
+  112                  | array_rvalue
+  113                  | ident
+  114                  | function_call
+  115                  | macro_function_call
+  116                  | string
+
+  117 comments: commentline
 
 
 Терминальные символы с правилами, в которых они появляются
 
 $end (0) 0
 '!' (33)
-'%' (37) 75
-'&' (38) 15 16 33 34 53 54 96 97
-'(' (40) 6 7 80 89 90 99
-')' (41) 6 7 80 89 90 99
-'*' (42) 17 49 73
-'+' (43) 71
-',' (44) 11 28 94
-'-' (45) 72 83
-'/' (47) 74
+'%' (37) 86
+'&' (38) 15 16 33 34 53 54 107 108
+'(' (40) 6 7 91 100 101 110
+')' (41) 6 7 91 100 101 110
+'*' (42) 17 49 84
+'+' (43) 82
+',' (44) 11 29 105
+'-' (45) 83 94
+'/' (47) 85
 ':' (58) 12 60
-';' (59) 23 25 38 45 46 47 48 49 50
+';' (59) 38 45 46 47 48 49 50 68 75 76
 '=' (61) 47 48 49 50
-'[' (91) 23 24 25 26
-']' (93) 23 24 25 26
-'{' (123) 6 7 44 58 59 62 63 64 65
-'}' (125) 6 7 44 58 59 62 63 64 65
+'[' (91) 23 24 25
+']' (93) 23 24 25
+'{' (123) 6 7 44 58 59 62 63 64 65 74
+'}' (125) 6 7 44 58 59 62 63 64 65 74
 error (256)
 FN (258) 6 7
 LET (259) 47 48
-MUT (260) 16 18 34 48 54 97
+MUT (260) 16 18 34 48 54 108
 IF (261) 62 63 64
 ELSE (262) 63 64
 WHILE (263) 65
-number (264) 23 25 82 83 100
-ident (265) 6 7 13 21 23 26 51 84 90 102
-string (266) 85 105
-macro_ident (267) 89
-and (268) 67
-or (269) 68
-eqt (270) 69
-grt (271) 76
-geq (272) 77
-lrt (273) 78
-leq (274) 79
-neq (275) 70
-commentline (276) 106
+number (264) 93 94 111
+ident (265) 6 7 13 21 23 25 51 95 101 113
+string (266) 96 116
+macro_ident (267) 100
+and (268) 78
+or (269) 79
+eqt (270) 80
+grt (271) 87
+geq (272) 88
+lrt (273) 89
+leq (274) 90
+neq (275) 81
+commentline (276) 117
 quote (277)
 RIGHT_ARROW (278) 30
 CONST (279) 19
 RETURN (280) 45 46
-BREAK (281)
-CONTINUE (282)
+BREAK (281) 75
+CONTINUE (282) 76
 
 
 Нетерминальные символы с правилами, в которых они появляются
@@ -233,61 +245,67 @@ raw_type (56)
 array_or_slice_type (57)
     налево: 23, направо: 22
 array_rvalue (58)
-    налево: 24 25, направо: 57 101
-array_subscription (59)
-    налево: 26, направо: 52 88
+    налево: 24, направо: 57 112
+array_indexing (59)
+    налево: 25, направо: 52 99
 maybe_exprs (60)
-    налево: 27 28 29, направо: 24
-maybe_return_type (61)
+    налево: 26 27, направо: 24
+exprs (61)
+    налево: 28 29, направо: 26 29
+maybe_return_type (62)
     налево: 30 31, направо: 6 7
-func_return_type (62)
+func_return_type (63)
     налево: 32 33 34, направо: 30
-return_expression (63)
+return_expression (64)
     налево: 35, направо: 7 58
-statements (64)
-    налево: 36 37, направо: 6 35 36 44 59 62 63 64 65
-statement (65)
+statements (65)
+    налево: 36 37, направо: 6 35 36 44 59 62 63 64
+statement (66)
     налево: 38 39 40 41 42 43 44, направо: 36
-return_token_expr (66)
-    налево: 45 46, направо: 43
-assignment (67)
-    налево: 47 48 49 50, направо: 39
-lvalue (68)
+return_token_expr (67)
+    налево: 45 46, направо: 43 73
+assignment (68)
+    налево: 47 48 49 50, направо: 39 69
+lvalue (69)
     налево: 51 52, направо: 47 48 49 50
-maybe_rvalue_prefix (69)
+maybe_rvalue_prefix (70)
     налево: 53 54 55, направо: 47 48 49 50
-rvalue (70)
+rvalue (71)
     налево: 56 57 58 59, направо: 47 48 49 50
-maybe_assignment_type (71)
+maybe_assignment_type (72)
     налево: 60 61, направо: 47 48 49 50
-if_statement (72)
-    налево: 62 63 64, направо: 40 64
-while_statement (73)
-    налево: 65, направо: 41
-expr (74)
-    налево: 66, направо: 25 26 27 28 35 38 46 56 62 63
-    64 65 99
-expr_binary_operation (75)
-    налево: 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81, направо:
-    66 67 68 69 70 71 72 73 74 75 76 77 78 79 80
-expr_token (76)
-    налево: 82 83 84 85 86 87 88, направо: 81
-macro_function_call (77)
-    налево: 89, направо: 87 104
-function_call (78)
-    налево: 90, направо: 86 103
-maybe_args (79)
-    налево: 91 92, направо: 89 90
-args (80)
-    налево: 93 94, направо: 91 94
-arg (81)
-    налево: 95 96 97, направо: 93 94
-expr_for_passing (82)
-    налево: 98 99, направо: 95 96 97
-non_brackets_expr (83)
-    налево: 100 101 102 103 104 105, направо: 98
-comments (84)
-    налево: 106, направо: 42
+if_statement (73)
+    налево: 62 63 64, направо: 40 64 70
+while_statement (74)
+    налево: 65, направо: 41 71
+statements_in_while (75)
+    налево: 66 67, направо: 65 66 74
+statement_in_while (76)
+    налево: 68 69 70 71 72 73 74 75 76, направо: 66
+expr (77)
+    налево: 77, направо: 25 28 29 35 38 46 56 62 63 64
+    65 68 106 110
+expr_binary_operation (78)
+    налево: 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92, направо:
+    77 78 79 80 81 82 83 84 85 86 87 88 89 90 91
+expr_token (79)
+    налево: 93 94 95 96 97 98 99, направо: 92
+macro_function_call (80)
+    налево: 100, направо: 98 115
+function_call (81)
+    налево: 101, направо: 97 114
+maybe_args (82)
+    налево: 102 103, направо: 100 101
+args (83)
+    налево: 104 105, направо: 102 105
+arg (84)
+    налево: 106 107 108, направо: 104 105
+expr_for_passing (85)
+    налево: 109 110, направо: 107 108
+non_brackets_expr (86)
+    налево: 111 112 113 114 115 116, направо: 109
+comments (87)
+    налево: 117, направо: 42 72
 
 
 Состояние 0
@@ -507,7 +525,7 @@ comments (84)
 
 Состояние 23
 
-   23 array_or_slice_type: '[' . ident ']' '[' ident ';' number ']'
+   23 array_or_slice_type: '[' . ident ']'
 
     ident  сдвиг, и переход в состояние 35
 
@@ -611,7 +629,7 @@ comments (84)
 
 Состояние 35
 
-   23 array_or_slice_type: '[' ident . ']' '[' ident ';' number ']'
+   23 array_or_slice_type: '[' ident . ']'
 
     ']'  сдвиг, и переход в состояние 43
 
@@ -680,7 +698,7 @@ comments (84)
     '}'          сдвиг, и переход в состояние 59
     RETURN       сдвиг, и переход в состояние 60
 
-    array_subscription     переход в состояние 61
+    array_indexing         переход в состояние 61
     statement              переход в состояние 62
     return_token_expr      переход в состояние 63
     assignment             переход в состояние 64
@@ -704,9 +722,9 @@ comments (84)
 
 Состояние 43
 
-   23 array_or_slice_type: '[' ident ']' . '[' ident ';' number ']'
+   23 array_or_slice_type: '[' ident ']' .
 
-    '['  сдвиг, и переход в состояние 74
+    $default  вывод с использованием правила 23 (array_or_slice_type)
 
 
 Состояние 44
@@ -735,11 +753,11 @@ comments (84)
    47 assignment: LET . lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'
    48           | LET . MUT lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'
 
-    MUT    сдвиг, и переход в состояние 75
-    ident  сдвиг, и переход в состояние 76
+    MUT    сдвиг, и переход в состояние 74
+    ident  сдвиг, и переход в состояние 75
 
-    array_subscription  переход в состояние 77
-    lvalue              переход в состояние 78
+    array_indexing  переход в состояние 76
+    lvalue          переход в состояние 77
 
 
 Состояние 48
@@ -749,14 +767,14 @@ comments (84)
    64             | IF . expr '{' statements '}' ELSE if_statement
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
 
-    array_subscription     переход в состояние 80
-    expr                   переход в состояние 81
+    array_indexing         переход в состояние 79
+    expr                   переход в состояние 80
     expr_binary_operation  переход в состояние 69
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
@@ -765,17 +783,17 @@ comments (84)
 
 Состояние 49
 
-   65 while_statement: WHILE . expr '{' statements '}'
+   65 while_statement: WHILE . expr '{' statements_in_while '}'
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
 
-    array_subscription     переход в состояние 80
-    expr                   переход в состояние 82
+    array_indexing         переход в состояние 79
+    expr                   переход в состояние 81
     expr_binary_operation  переход в состояние 69
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
@@ -784,77 +802,77 @@ comments (84)
 
 Состояние 50
 
-   82 expr_token: number .
+   93 expr_token: number .
 
-    $default  вывод с использованием правила 82 (expr_token)
+    $default  вывод с использованием правила 93 (expr_token)
 
 
 Состояние 51
 
-   26 array_subscription: ident . '[' expr ']'
+   25 array_indexing: ident . '[' expr ']'
    51 lvalue: ident .
-   84 expr_token: ident .
-   90 function_call: ident . '(' maybe_args ')'
+   95 expr_token: ident .
+  101 function_call: ident . '(' maybe_args ')'
 
-    '('  сдвиг, и переход в состояние 83
-    '['  сдвиг, и переход в состояние 84
+    '('  сдвиг, и переход в состояние 82
+    '['  сдвиг, и переход в состояние 83
 
     '='       вывод с использованием правила 51 (lvalue)
     ':'       вывод с использованием правила 51 (lvalue)
-    $default  вывод с использованием правила 84 (expr_token)
+    $default  вывод с использованием правила 95 (expr_token)
 
 
 Состояние 52
 
-   85 expr_token: string .
+   96 expr_token: string .
 
-    $default  вывод с использованием правила 85 (expr_token)
+    $default  вывод с использованием правила 96 (expr_token)
 
 
 Состояние 53
 
-   89 macro_function_call: macro_ident . '(' maybe_args ')'
+  100 macro_function_call: macro_ident . '(' maybe_args ')'
 
-    '('  сдвиг, и переход в состояние 85
+    '('  сдвиг, и переход в состояние 84
 
 
 Состояние 54
 
-   83 expr_token: '-' . number
+   94 expr_token: '-' . number
 
-    number  сдвиг, и переход в состояние 86
+    number  сдвиг, и переход в состояние 85
 
 
 Состояние 55
 
    49 assignment: '*' . lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'
 
-    ident  сдвиг, и переход в состояние 76
+    ident  сдвиг, и переход в состояние 75
 
-    array_subscription  переход в состояние 77
-    lvalue              переход в состояние 87
+    array_indexing  переход в состояние 76
+    lvalue          переход в состояние 86
 
 
 Состояние 56
 
-  106 comments: commentline .
+  117 comments: commentline .
 
-    $default  вывод с использованием правила 106 (comments)
+    $default  вывод с использованием правила 117 (comments)
 
 
 Состояние 57
 
-   80 expr_binary_operation: '(' . expr_binary_operation ')'
+   91 expr_binary_operation: '(' . expr_binary_operation ')'
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
 
-    array_subscription     переход в состояние 80
-    expr_binary_operation  переход в состояние 88
+    array_indexing         переход в состояние 79
+    expr_binary_operation  переход в состояние 87
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
@@ -866,7 +884,7 @@ comments (84)
 
     $default  вывод с использованием правила 37 (statements)
 
-    statements  переход в состояние 89
+    statements  переход в состояние 88
 
 
 Состояние 59
@@ -882,15 +900,15 @@ comments (84)
    46                  | RETURN . expr ';'
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
-    ';'          сдвиг, и переход в состояние 90
+    ';'          сдвиг, и переход в состояние 89
 
-    array_subscription     переход в состояние 80
-    expr                   переход в состояние 91
+    array_indexing         переход в состояние 79
+    expr                   переход в состояние 90
     expr_binary_operation  переход в состояние 69
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
@@ -899,12 +917,12 @@ comments (84)
 
 Состояние 61
 
-   52 lvalue: array_subscription .
-   88 expr_token: array_subscription .
+   52 lvalue: array_indexing .
+   99 expr_token: array_indexing .
 
     '='       вывод с использованием правила 52 (lvalue)
     ':'       вывод с использованием правила 52 (lvalue)
-    $default  вывод с использованием правила 88 (expr_token)
+    $default  вывод с использованием правила 99 (expr_token)
 
 
 Состояние 62
@@ -932,11 +950,11 @@ comments (84)
 
    50 assignment: lvalue . maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'
 
-    ':'  сдвиг, и переход в состояние 92
+    ':'  сдвиг, и переход в состояние 91
 
     $default  вывод с использованием правила 61 (maybe_assignment_type)
 
-    maybe_assignment_type  переход в состояние 93
+    maybe_assignment_type  переход в состояние 92
 
 
 Состояние 66
@@ -958,64 +976,64 @@ comments (84)
    35 return_expression: statements expr .
    38 statement: expr . ';'
 
-    ';'  сдвиг, и переход в состояние 94
+    ';'  сдвиг, и переход в состояние 93
 
     $default  вывод с использованием правила 35 (return_expression)
 
 
 Состояние 69
 
-   66 expr: expr_binary_operation .
-   67 expr_binary_operation: expr_binary_operation . and expr_binary_operation
-   68                      | expr_binary_operation . or expr_binary_operation
-   69                      | expr_binary_operation . eqt expr_binary_operation
-   70                      | expr_binary_operation . neq expr_binary_operation
-   71                      | expr_binary_operation . '+' expr_binary_operation
-   72                      | expr_binary_operation . '-' expr_binary_operation
-   73                      | expr_binary_operation . '*' expr_binary_operation
-   74                      | expr_binary_operation . '/' expr_binary_operation
-   75                      | expr_binary_operation . '%' expr_binary_operation
-   76                      | expr_binary_operation . grt expr_binary_operation
-   77                      | expr_binary_operation . geq expr_binary_operation
-   78                      | expr_binary_operation . lrt expr_binary_operation
-   79                      | expr_binary_operation . leq expr_binary_operation
+   77 expr: expr_binary_operation .
+   78 expr_binary_operation: expr_binary_operation . and expr_binary_operation
+   79                      | expr_binary_operation . or expr_binary_operation
+   80                      | expr_binary_operation . eqt expr_binary_operation
+   81                      | expr_binary_operation . neq expr_binary_operation
+   82                      | expr_binary_operation . '+' expr_binary_operation
+   83                      | expr_binary_operation . '-' expr_binary_operation
+   84                      | expr_binary_operation . '*' expr_binary_operation
+   85                      | expr_binary_operation . '/' expr_binary_operation
+   86                      | expr_binary_operation . '%' expr_binary_operation
+   87                      | expr_binary_operation . grt expr_binary_operation
+   88                      | expr_binary_operation . geq expr_binary_operation
+   89                      | expr_binary_operation . lrt expr_binary_operation
+   90                      | expr_binary_operation . leq expr_binary_operation
 
-    '+'  сдвиг, и переход в состояние 95
-    '-'  сдвиг, и переход в состояние 96
-    '*'  сдвиг, и переход в состояние 97
-    '/'  сдвиг, и переход в состояние 98
-    '%'  сдвиг, и переход в состояние 99
-    and  сдвиг, и переход в состояние 100
-    or   сдвиг, и переход в состояние 101
-    eqt  сдвиг, и переход в состояние 102
-    grt  сдвиг, и переход в состояние 103
-    geq  сдвиг, и переход в состояние 104
-    lrt  сдвиг, и переход в состояние 105
-    leq  сдвиг, и переход в состояние 106
-    neq  сдвиг, и переход в состояние 107
+    '+'  сдвиг, и переход в состояние 94
+    '-'  сдвиг, и переход в состояние 95
+    '*'  сдвиг, и переход в состояние 96
+    '/'  сдвиг, и переход в состояние 97
+    '%'  сдвиг, и переход в состояние 98
+    and  сдвиг, и переход в состояние 99
+    or   сдвиг, и переход в состояние 100
+    eqt  сдвиг, и переход в состояние 101
+    grt  сдвиг, и переход в состояние 102
+    geq  сдвиг, и переход в состояние 103
+    lrt  сдвиг, и переход в состояние 104
+    leq  сдвиг, и переход в состояние 105
+    neq  сдвиг, и переход в состояние 106
 
-    $default  вывод с использованием правила 66 (expr)
+    $default  вывод с использованием правила 77 (expr)
 
 
 Состояние 70
 
-   81 expr_binary_operation: expr_token .
+   92 expr_binary_operation: expr_token .
 
-    $default  вывод с использованием правила 81 (expr_binary_operation)
+    $default  вывод с использованием правила 92 (expr_binary_operation)
 
 
 Состояние 71
 
-   87 expr_token: macro_function_call .
+   98 expr_token: macro_function_call .
 
-    $default  вывод с использованием правила 87 (expr_token)
+    $default  вывод с использованием правила 98 (expr_token)
 
 
 Состояние 72
 
-   86 expr_token: function_call .
+   97 expr_token: function_call .
 
-    $default  вывод с использованием правила 86 (expr_token)
+    $default  вывод с использованием правила 97 (expr_token)
 
 
 Состояние 73
@@ -1027,203 +1045,198 @@ comments (84)
 
 Состояние 74
 
-   23 array_or_slice_type: '[' ident ']' '[' . ident ';' number ']'
+   48 assignment: LET MUT . lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'
 
-    ident  сдвиг, и переход в состояние 108
+    ident  сдвиг, и переход в состояние 75
+
+    array_indexing  переход в состояние 76
+    lvalue          переход в состояние 107
 
 
 Состояние 75
 
-   48 assignment: LET MUT . lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'
-
-    ident  сдвиг, и переход в состояние 76
-
-    array_subscription  переход в состояние 77
-    lvalue              переход в состояние 109
-
-
-Состояние 76
-
-   26 array_subscription: ident . '[' expr ']'
+   25 array_indexing: ident . '[' expr ']'
    51 lvalue: ident .
 
-    '['  сдвиг, и переход в состояние 84
+    '['  сдвиг, и переход в состояние 83
 
     $default  вывод с использованием правила 51 (lvalue)
 
 
-Состояние 77
+Состояние 76
 
-   52 lvalue: array_subscription .
+   52 lvalue: array_indexing .
 
     $default  вывод с использованием правила 52 (lvalue)
 
 
-Состояние 78
+Состояние 77
 
    47 assignment: LET lvalue . maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'
 
-    ':'  сдвиг, и переход в состояние 92
+    ':'  сдвиг, и переход в состояние 91
 
     $default  вывод с использованием правила 61 (maybe_assignment_type)
 
-    maybe_assignment_type  переход в состояние 110
+    maybe_assignment_type  переход в состояние 108
+
+
+Состояние 78
+
+   25 array_indexing: ident . '[' expr ']'
+   95 expr_token: ident .
+  101 function_call: ident . '(' maybe_args ')'
+
+    '('  сдвиг, и переход в состояние 82
+    '['  сдвиг, и переход в состояние 83
+
+    $default  вывод с использованием правила 95 (expr_token)
 
 
 Состояние 79
 
-   26 array_subscription: ident . '[' expr ']'
-   84 expr_token: ident .
-   90 function_call: ident . '(' maybe_args ')'
+   99 expr_token: array_indexing .
 
-    '('  сдвиг, и переход в состояние 83
-    '['  сдвиг, и переход в состояние 84
-
-    $default  вывод с использованием правила 84 (expr_token)
+    $default  вывод с использованием правила 99 (expr_token)
 
 
 Состояние 80
-
-   88 expr_token: array_subscription .
-
-    $default  вывод с использованием правила 88 (expr_token)
-
-
-Состояние 81
 
    62 if_statement: IF expr . '{' statements '}'
    63             | IF expr . '{' statements '}' ELSE '{' statements '}'
    64             | IF expr . '{' statements '}' ELSE if_statement
 
-    '{'  сдвиг, и переход в состояние 111
+    '{'  сдвиг, и переход в состояние 109
+
+
+Состояние 81
+
+   65 while_statement: WHILE expr . '{' statements_in_while '}'
+
+    '{'  сдвиг, и переход в состояние 110
 
 
 Состояние 82
 
-   65 while_statement: WHILE expr . '{' statements '}'
+  101 function_call: ident '(' . maybe_args ')'
 
-    '{'  сдвиг, и переход в состояние 112
+    number       сдвиг, и переход в состояние 50
+    ident        сдвиг, и переход в состояние 78
+    string       сдвиг, и переход в состояние 52
+    macro_ident  сдвиг, и переход в состояние 53
+    '-'          сдвиг, и переход в состояние 54
+    '('          сдвиг, и переход в состояние 57
+    '&'          сдвиг, и переход в состояние 111
+
+    $default  вывод с использованием правила 103 (maybe_args)
+
+    array_indexing         переход в состояние 79
+    expr                   переход в состояние 112
+    expr_binary_operation  переход в состояние 69
+    expr_token             переход в состояние 70
+    macro_function_call    переход в состояние 71
+    function_call          переход в состояние 72
+    maybe_args             переход в состояние 113
+    args                   переход в состояние 114
+    arg                    переход в состояние 115
 
 
 Состояние 83
 
-   90 function_call: ident '(' . maybe_args ')'
-
-    number       сдвиг, и переход в состояние 113
-    ident        сдвиг, и переход в состояние 114
-    string       сдвиг, и переход в состояние 115
-    macro_ident  сдвиг, и переход в состояние 53
-    '('          сдвиг, и переход в состояние 116
-    '['          сдвиг, и переход в состояние 117
-    '&'          сдвиг, и переход в состояние 118
-
-    $default  вывод с использованием правила 92 (maybe_args)
-
-    array_rvalue         переход в состояние 119
-    macro_function_call  переход в состояние 120
-    function_call        переход в состояние 121
-    maybe_args           переход в состояние 122
-    args                 переход в состояние 123
-    arg                  переход в состояние 124
-    expr_for_passing     переход в состояние 125
-    non_brackets_expr    переход в состояние 126
-
-
-Состояние 84
-
-   26 array_subscription: ident '[' . expr ']'
+   25 array_indexing: ident '[' . expr ']'
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
 
-    array_subscription     переход в состояние 80
-    expr                   переход в состояние 127
+    array_indexing         переход в состояние 79
+    expr                   переход в состояние 116
     expr_binary_operation  переход в состояние 69
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
 
 
+Состояние 84
+
+  100 macro_function_call: macro_ident '(' . maybe_args ')'
+
+    number       сдвиг, и переход в состояние 50
+    ident        сдвиг, и переход в состояние 78
+    string       сдвиг, и переход в состояние 52
+    macro_ident  сдвиг, и переход в состояние 53
+    '-'          сдвиг, и переход в состояние 54
+    '('          сдвиг, и переход в состояние 57
+    '&'          сдвиг, и переход в состояние 111
+
+    $default  вывод с использованием правила 103 (maybe_args)
+
+    array_indexing         переход в состояние 79
+    expr                   переход в состояние 112
+    expr_binary_operation  переход в состояние 69
+    expr_token             переход в состояние 70
+    macro_function_call    переход в состояние 71
+    function_call          переход в состояние 72
+    maybe_args             переход в состояние 117
+    args                   переход в состояние 114
+    arg                    переход в состояние 115
+
+
 Состояние 85
 
-   89 macro_function_call: macro_ident '(' . maybe_args ')'
+   94 expr_token: '-' number .
 
-    number       сдвиг, и переход в состояние 113
-    ident        сдвиг, и переход в состояние 114
-    string       сдвиг, и переход в состояние 115
-    macro_ident  сдвиг, и переход в состояние 53
-    '('          сдвиг, и переход в состояние 116
-    '['          сдвиг, и переход в состояние 117
-    '&'          сдвиг, и переход в состояние 118
-
-    $default  вывод с использованием правила 92 (maybe_args)
-
-    array_rvalue         переход в состояние 119
-    macro_function_call  переход в состояние 120
-    function_call        переход в состояние 121
-    maybe_args           переход в состояние 128
-    args                 переход в состояние 123
-    arg                  переход в состояние 124
-    expr_for_passing     переход в состояние 125
-    non_brackets_expr    переход в состояние 126
+    $default  вывод с использованием правила 94 (expr_token)
 
 
 Состояние 86
 
-   83 expr_token: '-' number .
+   49 assignment: '*' lvalue . maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'
 
-    $default  вывод с использованием правила 83 (expr_token)
+    ':'  сдвиг, и переход в состояние 91
+
+    $default  вывод с использованием правила 61 (maybe_assignment_type)
+
+    maybe_assignment_type  переход в состояние 118
 
 
 Состояние 87
 
-   49 assignment: '*' lvalue . maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'
+   78 expr_binary_operation: expr_binary_operation . and expr_binary_operation
+   79                      | expr_binary_operation . or expr_binary_operation
+   80                      | expr_binary_operation . eqt expr_binary_operation
+   81                      | expr_binary_operation . neq expr_binary_operation
+   82                      | expr_binary_operation . '+' expr_binary_operation
+   83                      | expr_binary_operation . '-' expr_binary_operation
+   84                      | expr_binary_operation . '*' expr_binary_operation
+   85                      | expr_binary_operation . '/' expr_binary_operation
+   86                      | expr_binary_operation . '%' expr_binary_operation
+   87                      | expr_binary_operation . grt expr_binary_operation
+   88                      | expr_binary_operation . geq expr_binary_operation
+   89                      | expr_binary_operation . lrt expr_binary_operation
+   90                      | expr_binary_operation . leq expr_binary_operation
+   91                      | '(' expr_binary_operation . ')'
 
-    ':'  сдвиг, и переход в состояние 92
-
-    $default  вывод с использованием правила 61 (maybe_assignment_type)
-
-    maybe_assignment_type  переход в состояние 129
+    '+'  сдвиг, и переход в состояние 94
+    '-'  сдвиг, и переход в состояние 95
+    '*'  сдвиг, и переход в состояние 96
+    '/'  сдвиг, и переход в состояние 97
+    '%'  сдвиг, и переход в состояние 98
+    and  сдвиг, и переход в состояние 99
+    or   сдвиг, и переход в состояние 100
+    eqt  сдвиг, и переход в состояние 101
+    grt  сдвиг, и переход в состояние 102
+    geq  сдвиг, и переход в состояние 103
+    lrt  сдвиг, и переход в состояние 104
+    leq  сдвиг, и переход в состояние 105
+    neq  сдвиг, и переход в состояние 106
+    ')'  сдвиг, и переход в состояние 119
 
 
 Состояние 88
-
-   67 expr_binary_operation: expr_binary_operation . and expr_binary_operation
-   68                      | expr_binary_operation . or expr_binary_operation
-   69                      | expr_binary_operation . eqt expr_binary_operation
-   70                      | expr_binary_operation . neq expr_binary_operation
-   71                      | expr_binary_operation . '+' expr_binary_operation
-   72                      | expr_binary_operation . '-' expr_binary_operation
-   73                      | expr_binary_operation . '*' expr_binary_operation
-   74                      | expr_binary_operation . '/' expr_binary_operation
-   75                      | expr_binary_operation . '%' expr_binary_operation
-   76                      | expr_binary_operation . grt expr_binary_operation
-   77                      | expr_binary_operation . geq expr_binary_operation
-   78                      | expr_binary_operation . lrt expr_binary_operation
-   79                      | expr_binary_operation . leq expr_binary_operation
-   80                      | '(' expr_binary_operation . ')'
-
-    '+'  сдвиг, и переход в состояние 95
-    '-'  сдвиг, и переход в состояние 96
-    '*'  сдвиг, и переход в состояние 97
-    '/'  сдвиг, и переход в состояние 98
-    '%'  сдвиг, и переход в состояние 99
-    and  сдвиг, и переход в состояние 100
-    or   сдвиг, и переход в состояние 101
-    eqt  сдвиг, и переход в состояние 102
-    grt  сдвиг, и переход в состояние 103
-    geq  сдвиг, и переход в состояние 104
-    lrt  сдвиг, и переход в состояние 105
-    leq  сдвиг, и переход в состояние 106
-    neq  сдвиг, и переход в состояние 107
-    ')'  сдвиг, и переход в состояние 130
-
-
-Состояние 89
 
    36 statements: statements . statement
    44 statement: '{' statements . '}'
@@ -1240,17 +1253,17 @@ comments (84)
     commentline  сдвиг, и переход в состояние 56
     '('          сдвиг, и переход в состояние 57
     '{'          сдвиг, и переход в состояние 58
-    '}'          сдвиг, и переход в состояние 131
+    '}'          сдвиг, и переход в состояние 120
     RETURN       сдвиг, и переход в состояние 60
 
-    array_subscription     переход в состояние 61
+    array_indexing         переход в состояние 61
     statement              переход в состояние 62
     return_token_expr      переход в состояние 63
     assignment             переход в состояние 64
     lvalue                 переход в состояние 65
     if_statement           переход в состояние 66
     while_statement        переход в состояние 67
-    expr                   переход в состояние 132
+    expr                   переход в состояние 121
     expr_binary_operation  переход в состояние 69
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
@@ -1258,58 +1271,76 @@ comments (84)
     comments               переход в состояние 73
 
 
-Состояние 90
+Состояние 89
 
    45 return_token_expr: RETURN ';' .
 
     $default  вывод с использованием правила 45 (return_token_expr)
 
 
-Состояние 91
+Состояние 90
 
    46 return_token_expr: RETURN expr . ';'
 
-    ';'  сдвиг, и переход в состояние 133
+    ';'  сдвиг, и переход в состояние 122
 
 
-Состояние 92
+Состояние 91
 
    60 maybe_assignment_type: ':' . raw_type
 
     ident  сдвиг, и переход в состояние 21
     '['    сдвиг, и переход в состояние 23
 
-    raw_type             переход в состояние 134
+    raw_type             переход в состояние 123
     array_or_slice_type  переход в состояние 27
 
 
-Состояние 93
+Состояние 92
 
    50 assignment: lvalue maybe_assignment_type . '=' maybe_rvalue_prefix rvalue ';'
 
-    '='  сдвиг, и переход в состояние 135
+    '='  сдвиг, и переход в состояние 124
 
 
-Состояние 94
+Состояние 93
 
    38 statement: expr ';' .
 
     $default  вывод с использованием правила 38 (statement)
 
 
-Состояние 95
+Состояние 94
 
-   71 expr_binary_operation: expr_binary_operation '+' . expr_binary_operation
+   82 expr_binary_operation: expr_binary_operation '+' . expr_binary_operation
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
 
-    array_subscription     переход в состояние 80
-    expr_binary_operation  переход в состояние 136
+    array_indexing         переход в состояние 79
+    expr_binary_operation  переход в состояние 125
+    expr_token             переход в состояние 70
+    macro_function_call    переход в состояние 71
+    function_call          переход в состояние 72
+
+
+Состояние 95
+
+   83 expr_binary_operation: expr_binary_operation '-' . expr_binary_operation
+
+    number       сдвиг, и переход в состояние 50
+    ident        сдвиг, и переход в состояние 78
+    string       сдвиг, и переход в состояние 52
+    macro_ident  сдвиг, и переход в состояние 53
+    '-'          сдвиг, и переход в состояние 54
+    '('          сдвиг, и переход в состояние 57
+
+    array_indexing         переход в состояние 79
+    expr_binary_operation  переход в состояние 126
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
@@ -1317,17 +1348,17 @@ comments (84)
 
 Состояние 96
 
-   72 expr_binary_operation: expr_binary_operation '-' . expr_binary_operation
+   84 expr_binary_operation: expr_binary_operation '*' . expr_binary_operation
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
 
-    array_subscription     переход в состояние 80
-    expr_binary_operation  переход в состояние 137
+    array_indexing         переход в состояние 79
+    expr_binary_operation  переход в состояние 127
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
@@ -1335,17 +1366,17 @@ comments (84)
 
 Состояние 97
 
-   73 expr_binary_operation: expr_binary_operation '*' . expr_binary_operation
+   85 expr_binary_operation: expr_binary_operation '/' . expr_binary_operation
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
 
-    array_subscription     переход в состояние 80
-    expr_binary_operation  переход в состояние 138
+    array_indexing         переход в состояние 79
+    expr_binary_operation  переход в состояние 128
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
@@ -1353,17 +1384,17 @@ comments (84)
 
 Состояние 98
 
-   74 expr_binary_operation: expr_binary_operation '/' . expr_binary_operation
+   86 expr_binary_operation: expr_binary_operation '%' . expr_binary_operation
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
 
-    array_subscription     переход в состояние 80
-    expr_binary_operation  переход в состояние 139
+    array_indexing         переход в состояние 79
+    expr_binary_operation  переход в состояние 129
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
@@ -1371,17 +1402,17 @@ comments (84)
 
 Состояние 99
 
-   75 expr_binary_operation: expr_binary_operation '%' . expr_binary_operation
+   78 expr_binary_operation: expr_binary_operation and . expr_binary_operation
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
 
-    array_subscription     переход в состояние 80
-    expr_binary_operation  переход в состояние 140
+    array_indexing         переход в состояние 79
+    expr_binary_operation  переход в состояние 130
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
@@ -1389,17 +1420,17 @@ comments (84)
 
 Состояние 100
 
-   67 expr_binary_operation: expr_binary_operation and . expr_binary_operation
+   79 expr_binary_operation: expr_binary_operation or . expr_binary_operation
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
 
-    array_subscription     переход в состояние 80
-    expr_binary_operation  переход в состояние 141
+    array_indexing         переход в состояние 79
+    expr_binary_operation  переход в состояние 131
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
@@ -1407,17 +1438,17 @@ comments (84)
 
 Состояние 101
 
-   68 expr_binary_operation: expr_binary_operation or . expr_binary_operation
+   80 expr_binary_operation: expr_binary_operation eqt . expr_binary_operation
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
 
-    array_subscription     переход в состояние 80
-    expr_binary_operation  переход в состояние 142
+    array_indexing         переход в состояние 79
+    expr_binary_operation  переход в состояние 132
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
@@ -1425,17 +1456,17 @@ comments (84)
 
 Состояние 102
 
-   69 expr_binary_operation: expr_binary_operation eqt . expr_binary_operation
+   87 expr_binary_operation: expr_binary_operation grt . expr_binary_operation
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
 
-    array_subscription     переход в состояние 80
-    expr_binary_operation  переход в состояние 143
+    array_indexing         переход в состояние 79
+    expr_binary_operation  переход в состояние 133
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
@@ -1443,17 +1474,17 @@ comments (84)
 
 Состояние 103
 
-   76 expr_binary_operation: expr_binary_operation grt . expr_binary_operation
+   88 expr_binary_operation: expr_binary_operation geq . expr_binary_operation
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
 
-    array_subscription     переход в состояние 80
-    expr_binary_operation  переход в состояние 144
+    array_indexing         переход в состояние 79
+    expr_binary_operation  переход в состояние 134
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
@@ -1461,17 +1492,17 @@ comments (84)
 
 Состояние 104
 
-   77 expr_binary_operation: expr_binary_operation geq . expr_binary_operation
+   89 expr_binary_operation: expr_binary_operation lrt . expr_binary_operation
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
 
-    array_subscription     переход в состояние 80
-    expr_binary_operation  переход в состояние 145
+    array_indexing         переход в состояние 79
+    expr_binary_operation  переход в состояние 135
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
@@ -1479,17 +1510,17 @@ comments (84)
 
 Состояние 105
 
-   78 expr_binary_operation: expr_binary_operation lrt . expr_binary_operation
+   90 expr_binary_operation: expr_binary_operation leq . expr_binary_operation
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
 
-    array_subscription     переход в состояние 80
-    expr_binary_operation  переход в состояние 146
+    array_indexing         переход в состояние 79
+    expr_binary_operation  переход в состояние 136
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
@@ -1497,17 +1528,17 @@ comments (84)
 
 Состояние 106
 
-   79 expr_binary_operation: expr_binary_operation leq . expr_binary_operation
+   81 expr_binary_operation: expr_binary_operation neq . expr_binary_operation
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
 
-    array_subscription     переход в состояние 80
-    expr_binary_operation  переход в состояние 147
+    array_indexing         переход в состояние 79
+    expr_binary_operation  переход в состояние 137
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
@@ -1515,48 +1546,23 @@ comments (84)
 
 Состояние 107
 
-   70 expr_binary_operation: expr_binary_operation neq . expr_binary_operation
+   48 assignment: LET MUT lvalue . maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'
 
-    number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
-    string       сдвиг, и переход в состояние 52
-    macro_ident  сдвиг, и переход в состояние 53
-    '-'          сдвиг, и переход в состояние 54
-    '('          сдвиг, и переход в состояние 57
+    ':'  сдвиг, и переход в состояние 91
 
-    array_subscription     переход в состояние 80
-    expr_binary_operation  переход в состояние 148
-    expr_token             переход в состояние 70
-    macro_function_call    переход в состояние 71
-    function_call          переход в состояние 72
+    $default  вывод с использованием правила 61 (maybe_assignment_type)
+
+    maybe_assignment_type  переход в состояние 138
 
 
 Состояние 108
 
-   23 array_or_slice_type: '[' ident ']' '[' ident . ';' number ']'
+   47 assignment: LET lvalue maybe_assignment_type . '=' maybe_rvalue_prefix rvalue ';'
 
-    ';'  сдвиг, и переход в состояние 149
+    '='  сдвиг, и переход в состояние 139
 
 
 Состояние 109
-
-   48 assignment: LET MUT lvalue . maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'
-
-    ':'  сдвиг, и переход в состояние 92
-
-    $default  вывод с использованием правила 61 (maybe_assignment_type)
-
-    maybe_assignment_type  переход в состояние 150
-
-
-Состояние 110
-
-   47 assignment: LET lvalue maybe_assignment_type . '=' maybe_rvalue_prefix rvalue ';'
-
-    '='  сдвиг, и переход в состояние 151
-
-
-Состояние 111
 
    62 if_statement: IF expr '{' . statements '}'
    63             | IF expr '{' . statements '}' ELSE '{' statements '}'
@@ -1564,585 +1570,484 @@ comments (84)
 
     $default  вывод с использованием правила 37 (statements)
 
-    statements  переход в состояние 152
+    statements  переход в состояние 140
+
+
+Состояние 110
+
+   65 while_statement: WHILE expr '{' . statements_in_while '}'
+
+    $default  вывод с использованием правила 67 (statements_in_while)
+
+    statements_in_while  переход в состояние 141
+
+
+Состояние 111
+
+  107 arg: '&' . expr_for_passing
+  108    | '&' . MUT expr_for_passing
+
+    MUT          сдвиг, и переход в состояние 142
+    number       сдвиг, и переход в состояние 143
+    ident        сдвиг, и переход в состояние 144
+    string       сдвиг, и переход в состояние 145
+    macro_ident  сдвиг, и переход в состояние 53
+    '('          сдвиг, и переход в состояние 146
+    '['          сдвиг, и переход в состояние 147
+
+    array_rvalue         переход в состояние 148
+    macro_function_call  переход в состояние 149
+    function_call        переход в состояние 150
+    expr_for_passing     переход в состояние 151
+    non_brackets_expr    переход в состояние 152
 
 
 Состояние 112
 
-   65 while_statement: WHILE expr '{' . statements '}'
+  106 arg: expr .
 
-    $default  вывод с использованием правила 37 (statements)
-
-    statements  переход в состояние 153
+    $default  вывод с использованием правила 106 (arg)
 
 
 Состояние 113
 
-  100 non_brackets_expr: number .
+  101 function_call: ident '(' maybe_args . ')'
 
-    $default  вывод с использованием правила 100 (non_brackets_expr)
+    ')'  сдвиг, и переход в состояние 153
 
 
 Состояние 114
 
-   90 function_call: ident . '(' maybe_args ')'
-  102 non_brackets_expr: ident .
+  102 maybe_args: args .
+  105 args: args . ',' arg
 
-    '('  сдвиг, и переход в состояние 83
+    ','  сдвиг, и переход в состояние 154
 
-    $default  вывод с использованием правила 102 (non_brackets_expr)
+    $default  вывод с использованием правила 102 (maybe_args)
 
 
 Состояние 115
 
-  105 non_brackets_expr: string .
+  104 args: arg .
 
-    $default  вывод с использованием правила 105 (non_brackets_expr)
+    $default  вывод с использованием правила 104 (args)
 
 
 Состояние 116
 
-   99 expr_for_passing: '(' . expr ')'
+   25 array_indexing: ident '[' expr . ']'
 
-    number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
-    string       сдвиг, и переход в состояние 52
-    macro_ident  сдвиг, и переход в состояние 53
-    '-'          сдвиг, и переход в состояние 54
-    '('          сдвиг, и переход в состояние 57
-
-    array_subscription     переход в состояние 80
-    expr                   переход в состояние 154
-    expr_binary_operation  переход в состояние 69
-    expr_token             переход в состояние 70
-    macro_function_call    переход в состояние 71
-    function_call          переход в состояние 72
+    ']'  сдвиг, и переход в состояние 155
 
 
 Состояние 117
 
-   24 array_rvalue: '[' . maybe_exprs ']'
-   25             | '[' . expr ';' number ']'
+  100 macro_function_call: macro_ident '(' maybe_args . ')'
 
-    number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
-    string       сдвиг, и переход в состояние 52
-    macro_ident  сдвиг, и переход в состояние 53
-    '-'          сдвиг, и переход в состояние 54
-    '('          сдвиг, и переход в состояние 57
-
-    $default  вывод с использованием правила 29 (maybe_exprs)
-
-    array_subscription     переход в состояние 80
-    maybe_exprs            переход в состояние 155
-    expr                   переход в состояние 156
-    expr_binary_operation  переход в состояние 69
-    expr_token             переход в состояние 70
-    macro_function_call    переход в состояние 71
-    function_call          переход в состояние 72
+    ')'  сдвиг, и переход в состояние 156
 
 
 Состояние 118
 
-   96 arg: '&' . expr_for_passing
-   97    | '&' . MUT expr_for_passing
+   49 assignment: '*' lvalue maybe_assignment_type . '=' maybe_rvalue_prefix rvalue ';'
 
-    MUT          сдвиг, и переход в состояние 157
-    number       сдвиг, и переход в состояние 113
-    ident        сдвиг, и переход в состояние 114
-    string       сдвиг, и переход в состояние 115
-    macro_ident  сдвиг, и переход в состояние 53
-    '('          сдвиг, и переход в состояние 116
-    '['          сдвиг, и переход в состояние 117
-
-    array_rvalue         переход в состояние 119
-    macro_function_call  переход в состояние 120
-    function_call        переход в состояние 121
-    expr_for_passing     переход в состояние 158
-    non_brackets_expr    переход в состояние 126
+    '='  сдвиг, и переход в состояние 157
 
 
 Состояние 119
 
-  101 non_brackets_expr: array_rvalue .
+   91 expr_binary_operation: '(' expr_binary_operation ')' .
 
-    $default  вывод с использованием правила 101 (non_brackets_expr)
+    $default  вывод с использованием правила 91 (expr_binary_operation)
 
 
 Состояние 120
-
-  104 non_brackets_expr: macro_function_call .
-
-    $default  вывод с использованием правила 104 (non_brackets_expr)
-
-
-Состояние 121
-
-  103 non_brackets_expr: function_call .
-
-    $default  вывод с использованием правила 103 (non_brackets_expr)
-
-
-Состояние 122
-
-   90 function_call: ident '(' maybe_args . ')'
-
-    ')'  сдвиг, и переход в состояние 159
-
-
-Состояние 123
-
-   91 maybe_args: args .
-   94 args: args . ',' arg
-
-    ','  сдвиг, и переход в состояние 160
-
-    $default  вывод с использованием правила 91 (maybe_args)
-
-
-Состояние 124
-
-   93 args: arg .
-
-    $default  вывод с использованием правила 93 (args)
-
-
-Состояние 125
-
-   95 arg: expr_for_passing .
-
-    $default  вывод с использованием правила 95 (arg)
-
-
-Состояние 126
-
-   98 expr_for_passing: non_brackets_expr .
-
-    $default  вывод с использованием правила 98 (expr_for_passing)
-
-
-Состояние 127
-
-   26 array_subscription: ident '[' expr . ']'
-
-    ']'  сдвиг, и переход в состояние 161
-
-
-Состояние 128
-
-   89 macro_function_call: macro_ident '(' maybe_args . ')'
-
-    ')'  сдвиг, и переход в состояние 162
-
-
-Состояние 129
-
-   49 assignment: '*' lvalue maybe_assignment_type . '=' maybe_rvalue_prefix rvalue ';'
-
-    '='  сдвиг, и переход в состояние 163
-
-
-Состояние 130
-
-   80 expr_binary_operation: '(' expr_binary_operation ')' .
-
-    $default  вывод с использованием правила 80 (expr_binary_operation)
-
-
-Состояние 131
 
    44 statement: '{' statements '}' .
 
     $default  вывод с использованием правила 44 (statement)
 
 
-Состояние 132
+Состояние 121
 
    38 statement: expr . ';'
 
-    ';'  сдвиг, и переход в состояние 94
+    ';'  сдвиг, и переход в состояние 93
 
 
-Состояние 133
+Состояние 122
 
    46 return_token_expr: RETURN expr ';' .
 
     $default  вывод с использованием правила 46 (return_token_expr)
 
 
-Состояние 134
+Состояние 123
 
    60 maybe_assignment_type: ':' raw_type .
 
     $default  вывод с использованием правила 60 (maybe_assignment_type)
 
 
-Состояние 135
+Состояние 124
 
    50 assignment: lvalue maybe_assignment_type '=' . maybe_rvalue_prefix rvalue ';'
 
-    '&'  сдвиг, и переход в состояние 164
+    '&'  сдвиг, и переход в состояние 158
 
     $default  вывод с использованием правила 55 (maybe_rvalue_prefix)
 
-    maybe_rvalue_prefix  переход в состояние 165
+    maybe_rvalue_prefix  переход в состояние 159
 
 
-Состояние 136
+Состояние 125
 
-   67 expr_binary_operation: expr_binary_operation . and expr_binary_operation
-   68                      | expr_binary_operation . or expr_binary_operation
-   69                      | expr_binary_operation . eqt expr_binary_operation
-   70                      | expr_binary_operation . neq expr_binary_operation
-   71                      | expr_binary_operation . '+' expr_binary_operation
-   71                      | expr_binary_operation '+' expr_binary_operation .
-   72                      | expr_binary_operation . '-' expr_binary_operation
-   73                      | expr_binary_operation . '*' expr_binary_operation
-   74                      | expr_binary_operation . '/' expr_binary_operation
-   75                      | expr_binary_operation . '%' expr_binary_operation
-   76                      | expr_binary_operation . grt expr_binary_operation
-   77                      | expr_binary_operation . geq expr_binary_operation
-   78                      | expr_binary_operation . lrt expr_binary_operation
-   79                      | expr_binary_operation . leq expr_binary_operation
+   78 expr_binary_operation: expr_binary_operation . and expr_binary_operation
+   79                      | expr_binary_operation . or expr_binary_operation
+   80                      | expr_binary_operation . eqt expr_binary_operation
+   81                      | expr_binary_operation . neq expr_binary_operation
+   82                      | expr_binary_operation . '+' expr_binary_operation
+   82                      | expr_binary_operation '+' expr_binary_operation .
+   83                      | expr_binary_operation . '-' expr_binary_operation
+   84                      | expr_binary_operation . '*' expr_binary_operation
+   85                      | expr_binary_operation . '/' expr_binary_operation
+   86                      | expr_binary_operation . '%' expr_binary_operation
+   87                      | expr_binary_operation . grt expr_binary_operation
+   88                      | expr_binary_operation . geq expr_binary_operation
+   89                      | expr_binary_operation . lrt expr_binary_operation
+   90                      | expr_binary_operation . leq expr_binary_operation
 
-    $default  вывод с использованием правила 71 (expr_binary_operation)
-
-
-Состояние 137
-
-   67 expr_binary_operation: expr_binary_operation . and expr_binary_operation
-   68                      | expr_binary_operation . or expr_binary_operation
-   69                      | expr_binary_operation . eqt expr_binary_operation
-   70                      | expr_binary_operation . neq expr_binary_operation
-   71                      | expr_binary_operation . '+' expr_binary_operation
-   72                      | expr_binary_operation . '-' expr_binary_operation
-   72                      | expr_binary_operation '-' expr_binary_operation .
-   73                      | expr_binary_operation . '*' expr_binary_operation
-   74                      | expr_binary_operation . '/' expr_binary_operation
-   75                      | expr_binary_operation . '%' expr_binary_operation
-   76                      | expr_binary_operation . grt expr_binary_operation
-   77                      | expr_binary_operation . geq expr_binary_operation
-   78                      | expr_binary_operation . lrt expr_binary_operation
-   79                      | expr_binary_operation . leq expr_binary_operation
-
-    $default  вывод с использованием правила 72 (expr_binary_operation)
+    $default  вывод с использованием правила 82 (expr_binary_operation)
 
 
-Состояние 138
+Состояние 126
 
-   67 expr_binary_operation: expr_binary_operation . and expr_binary_operation
-   68                      | expr_binary_operation . or expr_binary_operation
-   69                      | expr_binary_operation . eqt expr_binary_operation
-   70                      | expr_binary_operation . neq expr_binary_operation
-   71                      | expr_binary_operation . '+' expr_binary_operation
-   72                      | expr_binary_operation . '-' expr_binary_operation
-   73                      | expr_binary_operation . '*' expr_binary_operation
-   73                      | expr_binary_operation '*' expr_binary_operation .
-   74                      | expr_binary_operation . '/' expr_binary_operation
-   75                      | expr_binary_operation . '%' expr_binary_operation
-   76                      | expr_binary_operation . grt expr_binary_operation
-   77                      | expr_binary_operation . geq expr_binary_operation
-   78                      | expr_binary_operation . lrt expr_binary_operation
-   79                      | expr_binary_operation . leq expr_binary_operation
+   78 expr_binary_operation: expr_binary_operation . and expr_binary_operation
+   79                      | expr_binary_operation . or expr_binary_operation
+   80                      | expr_binary_operation . eqt expr_binary_operation
+   81                      | expr_binary_operation . neq expr_binary_operation
+   82                      | expr_binary_operation . '+' expr_binary_operation
+   83                      | expr_binary_operation . '-' expr_binary_operation
+   83                      | expr_binary_operation '-' expr_binary_operation .
+   84                      | expr_binary_operation . '*' expr_binary_operation
+   85                      | expr_binary_operation . '/' expr_binary_operation
+   86                      | expr_binary_operation . '%' expr_binary_operation
+   87                      | expr_binary_operation . grt expr_binary_operation
+   88                      | expr_binary_operation . geq expr_binary_operation
+   89                      | expr_binary_operation . lrt expr_binary_operation
+   90                      | expr_binary_operation . leq expr_binary_operation
 
-    '+'  сдвиг, и переход в состояние 95
-    '-'  сдвиг, и переход в состояние 96
-
-    $default  вывод с использованием правила 73 (expr_binary_operation)
+    $default  вывод с использованием правила 83 (expr_binary_operation)
 
 
-Состояние 139
+Состояние 127
 
-   67 expr_binary_operation: expr_binary_operation . and expr_binary_operation
-   68                      | expr_binary_operation . or expr_binary_operation
-   69                      | expr_binary_operation . eqt expr_binary_operation
-   70                      | expr_binary_operation . neq expr_binary_operation
-   71                      | expr_binary_operation . '+' expr_binary_operation
-   72                      | expr_binary_operation . '-' expr_binary_operation
-   73                      | expr_binary_operation . '*' expr_binary_operation
-   74                      | expr_binary_operation . '/' expr_binary_operation
-   74                      | expr_binary_operation '/' expr_binary_operation .
-   75                      | expr_binary_operation . '%' expr_binary_operation
-   76                      | expr_binary_operation . grt expr_binary_operation
-   77                      | expr_binary_operation . geq expr_binary_operation
-   78                      | expr_binary_operation . lrt expr_binary_operation
-   79                      | expr_binary_operation . leq expr_binary_operation
+   78 expr_binary_operation: expr_binary_operation . and expr_binary_operation
+   79                      | expr_binary_operation . or expr_binary_operation
+   80                      | expr_binary_operation . eqt expr_binary_operation
+   81                      | expr_binary_operation . neq expr_binary_operation
+   82                      | expr_binary_operation . '+' expr_binary_operation
+   83                      | expr_binary_operation . '-' expr_binary_operation
+   84                      | expr_binary_operation . '*' expr_binary_operation
+   84                      | expr_binary_operation '*' expr_binary_operation .
+   85                      | expr_binary_operation . '/' expr_binary_operation
+   86                      | expr_binary_operation . '%' expr_binary_operation
+   87                      | expr_binary_operation . grt expr_binary_operation
+   88                      | expr_binary_operation . geq expr_binary_operation
+   89                      | expr_binary_operation . lrt expr_binary_operation
+   90                      | expr_binary_operation . leq expr_binary_operation
 
-    '+'  сдвиг, и переход в состояние 95
-    '-'  сдвиг, и переход в состояние 96
+    '+'  сдвиг, и переход в состояние 94
+    '-'  сдвиг, и переход в состояние 95
 
-    $default  вывод с использованием правила 74 (expr_binary_operation)
-
-
-Состояние 140
-
-   67 expr_binary_operation: expr_binary_operation . and expr_binary_operation
-   68                      | expr_binary_operation . or expr_binary_operation
-   69                      | expr_binary_operation . eqt expr_binary_operation
-   70                      | expr_binary_operation . neq expr_binary_operation
-   71                      | expr_binary_operation . '+' expr_binary_operation
-   72                      | expr_binary_operation . '-' expr_binary_operation
-   73                      | expr_binary_operation . '*' expr_binary_operation
-   74                      | expr_binary_operation . '/' expr_binary_operation
-   75                      | expr_binary_operation . '%' expr_binary_operation
-   75                      | expr_binary_operation '%' expr_binary_operation .
-   76                      | expr_binary_operation . grt expr_binary_operation
-   77                      | expr_binary_operation . geq expr_binary_operation
-   78                      | expr_binary_operation . lrt expr_binary_operation
-   79                      | expr_binary_operation . leq expr_binary_operation
-
-    '+'  сдвиг, и переход в состояние 95
-    '-'  сдвиг, и переход в состояние 96
-
-    $default  вывод с использованием правила 75 (expr_binary_operation)
+    $default  вывод с использованием правила 84 (expr_binary_operation)
 
 
-Состояние 141
+Состояние 128
 
-   67 expr_binary_operation: expr_binary_operation . and expr_binary_operation
-   67                      | expr_binary_operation and expr_binary_operation .
-   68                      | expr_binary_operation . or expr_binary_operation
-   69                      | expr_binary_operation . eqt expr_binary_operation
-   70                      | expr_binary_operation . neq expr_binary_operation
-   71                      | expr_binary_operation . '+' expr_binary_operation
-   72                      | expr_binary_operation . '-' expr_binary_operation
-   73                      | expr_binary_operation . '*' expr_binary_operation
-   74                      | expr_binary_operation . '/' expr_binary_operation
-   75                      | expr_binary_operation . '%' expr_binary_operation
-   76                      | expr_binary_operation . grt expr_binary_operation
-   77                      | expr_binary_operation . geq expr_binary_operation
-   78                      | expr_binary_operation . lrt expr_binary_operation
-   79                      | expr_binary_operation . leq expr_binary_operation
+   78 expr_binary_operation: expr_binary_operation . and expr_binary_operation
+   79                      | expr_binary_operation . or expr_binary_operation
+   80                      | expr_binary_operation . eqt expr_binary_operation
+   81                      | expr_binary_operation . neq expr_binary_operation
+   82                      | expr_binary_operation . '+' expr_binary_operation
+   83                      | expr_binary_operation . '-' expr_binary_operation
+   84                      | expr_binary_operation . '*' expr_binary_operation
+   85                      | expr_binary_operation . '/' expr_binary_operation
+   85                      | expr_binary_operation '/' expr_binary_operation .
+   86                      | expr_binary_operation . '%' expr_binary_operation
+   87                      | expr_binary_operation . grt expr_binary_operation
+   88                      | expr_binary_operation . geq expr_binary_operation
+   89                      | expr_binary_operation . lrt expr_binary_operation
+   90                      | expr_binary_operation . leq expr_binary_operation
 
-    '+'  сдвиг, и переход в состояние 95
-    '-'  сдвиг, и переход в состояние 96
-    '*'  сдвиг, и переход в состояние 97
-    '/'  сдвиг, и переход в состояние 98
-    '%'  сдвиг, и переход в состояние 99
-    eqt  сдвиг, и переход в состояние 102
-    grt  сдвиг, и переход в состояние 103
-    geq  сдвиг, и переход в состояние 104
-    lrt  сдвиг, и переход в состояние 105
-    leq  сдвиг, и переход в состояние 106
-    neq  сдвиг, и переход в состояние 107
+    '+'  сдвиг, и переход в состояние 94
+    '-'  сдвиг, и переход в состояние 95
 
-    $default  вывод с использованием правила 67 (expr_binary_operation)
+    $default  вывод с использованием правила 85 (expr_binary_operation)
 
 
-Состояние 142
+Состояние 129
 
-   67 expr_binary_operation: expr_binary_operation . and expr_binary_operation
-   68                      | expr_binary_operation . or expr_binary_operation
-   68                      | expr_binary_operation or expr_binary_operation .
-   69                      | expr_binary_operation . eqt expr_binary_operation
-   70                      | expr_binary_operation . neq expr_binary_operation
-   71                      | expr_binary_operation . '+' expr_binary_operation
-   72                      | expr_binary_operation . '-' expr_binary_operation
-   73                      | expr_binary_operation . '*' expr_binary_operation
-   74                      | expr_binary_operation . '/' expr_binary_operation
-   75                      | expr_binary_operation . '%' expr_binary_operation
-   76                      | expr_binary_operation . grt expr_binary_operation
-   77                      | expr_binary_operation . geq expr_binary_operation
-   78                      | expr_binary_operation . lrt expr_binary_operation
-   79                      | expr_binary_operation . leq expr_binary_operation
+   78 expr_binary_operation: expr_binary_operation . and expr_binary_operation
+   79                      | expr_binary_operation . or expr_binary_operation
+   80                      | expr_binary_operation . eqt expr_binary_operation
+   81                      | expr_binary_operation . neq expr_binary_operation
+   82                      | expr_binary_operation . '+' expr_binary_operation
+   83                      | expr_binary_operation . '-' expr_binary_operation
+   84                      | expr_binary_operation . '*' expr_binary_operation
+   85                      | expr_binary_operation . '/' expr_binary_operation
+   86                      | expr_binary_operation . '%' expr_binary_operation
+   86                      | expr_binary_operation '%' expr_binary_operation .
+   87                      | expr_binary_operation . grt expr_binary_operation
+   88                      | expr_binary_operation . geq expr_binary_operation
+   89                      | expr_binary_operation . lrt expr_binary_operation
+   90                      | expr_binary_operation . leq expr_binary_operation
 
-    '+'  сдвиг, и переход в состояние 95
-    '-'  сдвиг, и переход в состояние 96
-    '*'  сдвиг, и переход в состояние 97
-    '/'  сдвиг, и переход в состояние 98
-    '%'  сдвиг, и переход в состояние 99
-    eqt  сдвиг, и переход в состояние 102
-    grt  сдвиг, и переход в состояние 103
-    geq  сдвиг, и переход в состояние 104
-    lrt  сдвиг, и переход в состояние 105
-    leq  сдвиг, и переход в состояние 106
-    neq  сдвиг, и переход в состояние 107
+    '+'  сдвиг, и переход в состояние 94
+    '-'  сдвиг, и переход в состояние 95
 
-    $default  вывод с использованием правила 68 (expr_binary_operation)
+    $default  вывод с использованием правила 86 (expr_binary_operation)
 
 
-Состояние 143
+Состояние 130
 
-   67 expr_binary_operation: expr_binary_operation . and expr_binary_operation
-   68                      | expr_binary_operation . or expr_binary_operation
-   69                      | expr_binary_operation . eqt expr_binary_operation
-   69                      | expr_binary_operation eqt expr_binary_operation .
-   70                      | expr_binary_operation . neq expr_binary_operation
-   71                      | expr_binary_operation . '+' expr_binary_operation
-   72                      | expr_binary_operation . '-' expr_binary_operation
-   73                      | expr_binary_operation . '*' expr_binary_operation
-   74                      | expr_binary_operation . '/' expr_binary_operation
-   75                      | expr_binary_operation . '%' expr_binary_operation
-   76                      | expr_binary_operation . grt expr_binary_operation
-   77                      | expr_binary_operation . geq expr_binary_operation
-   78                      | expr_binary_operation . lrt expr_binary_operation
-   79                      | expr_binary_operation . leq expr_binary_operation
+   78 expr_binary_operation: expr_binary_operation . and expr_binary_operation
+   78                      | expr_binary_operation and expr_binary_operation .
+   79                      | expr_binary_operation . or expr_binary_operation
+   80                      | expr_binary_operation . eqt expr_binary_operation
+   81                      | expr_binary_operation . neq expr_binary_operation
+   82                      | expr_binary_operation . '+' expr_binary_operation
+   83                      | expr_binary_operation . '-' expr_binary_operation
+   84                      | expr_binary_operation . '*' expr_binary_operation
+   85                      | expr_binary_operation . '/' expr_binary_operation
+   86                      | expr_binary_operation . '%' expr_binary_operation
+   87                      | expr_binary_operation . grt expr_binary_operation
+   88                      | expr_binary_operation . geq expr_binary_operation
+   89                      | expr_binary_operation . lrt expr_binary_operation
+   90                      | expr_binary_operation . leq expr_binary_operation
 
-    '+'  сдвиг, и переход в состояние 95
-    '-'  сдвиг, и переход в состояние 96
-    '*'  сдвиг, и переход в состояние 97
-    '/'  сдвиг, и переход в состояние 98
-    '%'  сдвиг, и переход в состояние 99
-
-    $default  вывод с использованием правила 69 (expr_binary_operation)
-
-
-Состояние 144
-
-   67 expr_binary_operation: expr_binary_operation . and expr_binary_operation
-   68                      | expr_binary_operation . or expr_binary_operation
-   69                      | expr_binary_operation . eqt expr_binary_operation
-   70                      | expr_binary_operation . neq expr_binary_operation
-   71                      | expr_binary_operation . '+' expr_binary_operation
-   72                      | expr_binary_operation . '-' expr_binary_operation
-   73                      | expr_binary_operation . '*' expr_binary_operation
-   74                      | expr_binary_operation . '/' expr_binary_operation
-   75                      | expr_binary_operation . '%' expr_binary_operation
-   76                      | expr_binary_operation . grt expr_binary_operation
-   76                      | expr_binary_operation grt expr_binary_operation .
-   77                      | expr_binary_operation . geq expr_binary_operation
-   78                      | expr_binary_operation . lrt expr_binary_operation
-   79                      | expr_binary_operation . leq expr_binary_operation
-
-    '+'  сдвиг, и переход в состояние 95
-    '-'  сдвиг, и переход в состояние 96
-    '*'  сдвиг, и переход в состояние 97
-    '/'  сдвиг, и переход в состояние 98
-    '%'  сдвиг, и переход в состояние 99
-
-    $default  вывод с использованием правила 76 (expr_binary_operation)
-
-
-Состояние 145
-
-   67 expr_binary_operation: expr_binary_operation . and expr_binary_operation
-   68                      | expr_binary_operation . or expr_binary_operation
-   69                      | expr_binary_operation . eqt expr_binary_operation
-   70                      | expr_binary_operation . neq expr_binary_operation
-   71                      | expr_binary_operation . '+' expr_binary_operation
-   72                      | expr_binary_operation . '-' expr_binary_operation
-   73                      | expr_binary_operation . '*' expr_binary_operation
-   74                      | expr_binary_operation . '/' expr_binary_operation
-   75                      | expr_binary_operation . '%' expr_binary_operation
-   76                      | expr_binary_operation . grt expr_binary_operation
-   77                      | expr_binary_operation . geq expr_binary_operation
-   77                      | expr_binary_operation geq expr_binary_operation .
-   78                      | expr_binary_operation . lrt expr_binary_operation
-   79                      | expr_binary_operation . leq expr_binary_operation
-
-    '+'  сдвиг, и переход в состояние 95
-    '-'  сдвиг, и переход в состояние 96
-    '*'  сдвиг, и переход в состояние 97
-    '/'  сдвиг, и переход в состояние 98
-    '%'  сдвиг, и переход в состояние 99
-
-    $default  вывод с использованием правила 77 (expr_binary_operation)
-
-
-Состояние 146
-
-   67 expr_binary_operation: expr_binary_operation . and expr_binary_operation
-   68                      | expr_binary_operation . or expr_binary_operation
-   69                      | expr_binary_operation . eqt expr_binary_operation
-   70                      | expr_binary_operation . neq expr_binary_operation
-   71                      | expr_binary_operation . '+' expr_binary_operation
-   72                      | expr_binary_operation . '-' expr_binary_operation
-   73                      | expr_binary_operation . '*' expr_binary_operation
-   74                      | expr_binary_operation . '/' expr_binary_operation
-   75                      | expr_binary_operation . '%' expr_binary_operation
-   76                      | expr_binary_operation . grt expr_binary_operation
-   77                      | expr_binary_operation . geq expr_binary_operation
-   78                      | expr_binary_operation . lrt expr_binary_operation
-   78                      | expr_binary_operation lrt expr_binary_operation .
-   79                      | expr_binary_operation . leq expr_binary_operation
-
-    '+'  сдвиг, и переход в состояние 95
-    '-'  сдвиг, и переход в состояние 96
-    '*'  сдвиг, и переход в состояние 97
-    '/'  сдвиг, и переход в состояние 98
-    '%'  сдвиг, и переход в состояние 99
+    '+'  сдвиг, и переход в состояние 94
+    '-'  сдвиг, и переход в состояние 95
+    '*'  сдвиг, и переход в состояние 96
+    '/'  сдвиг, и переход в состояние 97
+    '%'  сдвиг, и переход в состояние 98
+    eqt  сдвиг, и переход в состояние 101
+    grt  сдвиг, и переход в состояние 102
+    geq  сдвиг, и переход в состояние 103
+    lrt  сдвиг, и переход в состояние 104
+    leq  сдвиг, и переход в состояние 105
+    neq  сдвиг, и переход в состояние 106
 
     $default  вывод с использованием правила 78 (expr_binary_operation)
 
 
-Состояние 147
+Состояние 131
 
-   67 expr_binary_operation: expr_binary_operation . and expr_binary_operation
-   68                      | expr_binary_operation . or expr_binary_operation
-   69                      | expr_binary_operation . eqt expr_binary_operation
-   70                      | expr_binary_operation . neq expr_binary_operation
-   71                      | expr_binary_operation . '+' expr_binary_operation
-   72                      | expr_binary_operation . '-' expr_binary_operation
-   73                      | expr_binary_operation . '*' expr_binary_operation
-   74                      | expr_binary_operation . '/' expr_binary_operation
-   75                      | expr_binary_operation . '%' expr_binary_operation
-   76                      | expr_binary_operation . grt expr_binary_operation
-   77                      | expr_binary_operation . geq expr_binary_operation
-   78                      | expr_binary_operation . lrt expr_binary_operation
-   79                      | expr_binary_operation . leq expr_binary_operation
-   79                      | expr_binary_operation leq expr_binary_operation .
+   78 expr_binary_operation: expr_binary_operation . and expr_binary_operation
+   79                      | expr_binary_operation . or expr_binary_operation
+   79                      | expr_binary_operation or expr_binary_operation .
+   80                      | expr_binary_operation . eqt expr_binary_operation
+   81                      | expr_binary_operation . neq expr_binary_operation
+   82                      | expr_binary_operation . '+' expr_binary_operation
+   83                      | expr_binary_operation . '-' expr_binary_operation
+   84                      | expr_binary_operation . '*' expr_binary_operation
+   85                      | expr_binary_operation . '/' expr_binary_operation
+   86                      | expr_binary_operation . '%' expr_binary_operation
+   87                      | expr_binary_operation . grt expr_binary_operation
+   88                      | expr_binary_operation . geq expr_binary_operation
+   89                      | expr_binary_operation . lrt expr_binary_operation
+   90                      | expr_binary_operation . leq expr_binary_operation
 
-    '+'  сдвиг, и переход в состояние 95
-    '-'  сдвиг, и переход в состояние 96
-    '*'  сдвиг, и переход в состояние 97
-    '/'  сдвиг, и переход в состояние 98
-    '%'  сдвиг, и переход в состояние 99
+    '+'  сдвиг, и переход в состояние 94
+    '-'  сдвиг, и переход в состояние 95
+    '*'  сдвиг, и переход в состояние 96
+    '/'  сдвиг, и переход в состояние 97
+    '%'  сдвиг, и переход в состояние 98
+    eqt  сдвиг, и переход в состояние 101
+    grt  сдвиг, и переход в состояние 102
+    geq  сдвиг, и переход в состояние 103
+    lrt  сдвиг, и переход в состояние 104
+    leq  сдвиг, и переход в состояние 105
+    neq  сдвиг, и переход в состояние 106
 
     $default  вывод с использованием правила 79 (expr_binary_operation)
 
 
-Состояние 148
+Состояние 132
 
-   67 expr_binary_operation: expr_binary_operation . and expr_binary_operation
-   68                      | expr_binary_operation . or expr_binary_operation
-   69                      | expr_binary_operation . eqt expr_binary_operation
-   70                      | expr_binary_operation . neq expr_binary_operation
-   70                      | expr_binary_operation neq expr_binary_operation .
-   71                      | expr_binary_operation . '+' expr_binary_operation
-   72                      | expr_binary_operation . '-' expr_binary_operation
-   73                      | expr_binary_operation . '*' expr_binary_operation
-   74                      | expr_binary_operation . '/' expr_binary_operation
-   75                      | expr_binary_operation . '%' expr_binary_operation
-   76                      | expr_binary_operation . grt expr_binary_operation
-   77                      | expr_binary_operation . geq expr_binary_operation
-   78                      | expr_binary_operation . lrt expr_binary_operation
-   79                      | expr_binary_operation . leq expr_binary_operation
+   78 expr_binary_operation: expr_binary_operation . and expr_binary_operation
+   79                      | expr_binary_operation . or expr_binary_operation
+   80                      | expr_binary_operation . eqt expr_binary_operation
+   80                      | expr_binary_operation eqt expr_binary_operation .
+   81                      | expr_binary_operation . neq expr_binary_operation
+   82                      | expr_binary_operation . '+' expr_binary_operation
+   83                      | expr_binary_operation . '-' expr_binary_operation
+   84                      | expr_binary_operation . '*' expr_binary_operation
+   85                      | expr_binary_operation . '/' expr_binary_operation
+   86                      | expr_binary_operation . '%' expr_binary_operation
+   87                      | expr_binary_operation . grt expr_binary_operation
+   88                      | expr_binary_operation . geq expr_binary_operation
+   89                      | expr_binary_operation . lrt expr_binary_operation
+   90                      | expr_binary_operation . leq expr_binary_operation
 
-    '+'  сдвиг, и переход в состояние 95
-    '-'  сдвиг, и переход в состояние 96
-    '*'  сдвиг, и переход в состояние 97
-    '/'  сдвиг, и переход в состояние 98
-    '%'  сдвиг, и переход в состояние 99
+    '+'  сдвиг, и переход в состояние 94
+    '-'  сдвиг, и переход в состояние 95
+    '*'  сдвиг, и переход в состояние 96
+    '/'  сдвиг, и переход в состояние 97
+    '%'  сдвиг, и переход в состояние 98
 
-    $default  вывод с использованием правила 70 (expr_binary_operation)
-
-
-Состояние 149
-
-   23 array_or_slice_type: '[' ident ']' '[' ident ';' . number ']'
-
-    number  сдвиг, и переход в состояние 166
+    $default  вывод с использованием правила 80 (expr_binary_operation)
 
 
-Состояние 150
+Состояние 133
+
+   78 expr_binary_operation: expr_binary_operation . and expr_binary_operation
+   79                      | expr_binary_operation . or expr_binary_operation
+   80                      | expr_binary_operation . eqt expr_binary_operation
+   81                      | expr_binary_operation . neq expr_binary_operation
+   82                      | expr_binary_operation . '+' expr_binary_operation
+   83                      | expr_binary_operation . '-' expr_binary_operation
+   84                      | expr_binary_operation . '*' expr_binary_operation
+   85                      | expr_binary_operation . '/' expr_binary_operation
+   86                      | expr_binary_operation . '%' expr_binary_operation
+   87                      | expr_binary_operation . grt expr_binary_operation
+   87                      | expr_binary_operation grt expr_binary_operation .
+   88                      | expr_binary_operation . geq expr_binary_operation
+   89                      | expr_binary_operation . lrt expr_binary_operation
+   90                      | expr_binary_operation . leq expr_binary_operation
+
+    '+'  сдвиг, и переход в состояние 94
+    '-'  сдвиг, и переход в состояние 95
+    '*'  сдвиг, и переход в состояние 96
+    '/'  сдвиг, и переход в состояние 97
+    '%'  сдвиг, и переход в состояние 98
+
+    $default  вывод с использованием правила 87 (expr_binary_operation)
+
+
+Состояние 134
+
+   78 expr_binary_operation: expr_binary_operation . and expr_binary_operation
+   79                      | expr_binary_operation . or expr_binary_operation
+   80                      | expr_binary_operation . eqt expr_binary_operation
+   81                      | expr_binary_operation . neq expr_binary_operation
+   82                      | expr_binary_operation . '+' expr_binary_operation
+   83                      | expr_binary_operation . '-' expr_binary_operation
+   84                      | expr_binary_operation . '*' expr_binary_operation
+   85                      | expr_binary_operation . '/' expr_binary_operation
+   86                      | expr_binary_operation . '%' expr_binary_operation
+   87                      | expr_binary_operation . grt expr_binary_operation
+   88                      | expr_binary_operation . geq expr_binary_operation
+   88                      | expr_binary_operation geq expr_binary_operation .
+   89                      | expr_binary_operation . lrt expr_binary_operation
+   90                      | expr_binary_operation . leq expr_binary_operation
+
+    '+'  сдвиг, и переход в состояние 94
+    '-'  сдвиг, и переход в состояние 95
+    '*'  сдвиг, и переход в состояние 96
+    '/'  сдвиг, и переход в состояние 97
+    '%'  сдвиг, и переход в состояние 98
+
+    $default  вывод с использованием правила 88 (expr_binary_operation)
+
+
+Состояние 135
+
+   78 expr_binary_operation: expr_binary_operation . and expr_binary_operation
+   79                      | expr_binary_operation . or expr_binary_operation
+   80                      | expr_binary_operation . eqt expr_binary_operation
+   81                      | expr_binary_operation . neq expr_binary_operation
+   82                      | expr_binary_operation . '+' expr_binary_operation
+   83                      | expr_binary_operation . '-' expr_binary_operation
+   84                      | expr_binary_operation . '*' expr_binary_operation
+   85                      | expr_binary_operation . '/' expr_binary_operation
+   86                      | expr_binary_operation . '%' expr_binary_operation
+   87                      | expr_binary_operation . grt expr_binary_operation
+   88                      | expr_binary_operation . geq expr_binary_operation
+   89                      | expr_binary_operation . lrt expr_binary_operation
+   89                      | expr_binary_operation lrt expr_binary_operation .
+   90                      | expr_binary_operation . leq expr_binary_operation
+
+    '+'  сдвиг, и переход в состояние 94
+    '-'  сдвиг, и переход в состояние 95
+    '*'  сдвиг, и переход в состояние 96
+    '/'  сдвиг, и переход в состояние 97
+    '%'  сдвиг, и переход в состояние 98
+
+    $default  вывод с использованием правила 89 (expr_binary_operation)
+
+
+Состояние 136
+
+   78 expr_binary_operation: expr_binary_operation . and expr_binary_operation
+   79                      | expr_binary_operation . or expr_binary_operation
+   80                      | expr_binary_operation . eqt expr_binary_operation
+   81                      | expr_binary_operation . neq expr_binary_operation
+   82                      | expr_binary_operation . '+' expr_binary_operation
+   83                      | expr_binary_operation . '-' expr_binary_operation
+   84                      | expr_binary_operation . '*' expr_binary_operation
+   85                      | expr_binary_operation . '/' expr_binary_operation
+   86                      | expr_binary_operation . '%' expr_binary_operation
+   87                      | expr_binary_operation . grt expr_binary_operation
+   88                      | expr_binary_operation . geq expr_binary_operation
+   89                      | expr_binary_operation . lrt expr_binary_operation
+   90                      | expr_binary_operation . leq expr_binary_operation
+   90                      | expr_binary_operation leq expr_binary_operation .
+
+    '+'  сдвиг, и переход в состояние 94
+    '-'  сдвиг, и переход в состояние 95
+    '*'  сдвиг, и переход в состояние 96
+    '/'  сдвиг, и переход в состояние 97
+    '%'  сдвиг, и переход в состояние 98
+
+    $default  вывод с использованием правила 90 (expr_binary_operation)
+
+
+Состояние 137
+
+   78 expr_binary_operation: expr_binary_operation . and expr_binary_operation
+   79                      | expr_binary_operation . or expr_binary_operation
+   80                      | expr_binary_operation . eqt expr_binary_operation
+   81                      | expr_binary_operation . neq expr_binary_operation
+   81                      | expr_binary_operation neq expr_binary_operation .
+   82                      | expr_binary_operation . '+' expr_binary_operation
+   83                      | expr_binary_operation . '-' expr_binary_operation
+   84                      | expr_binary_operation . '*' expr_binary_operation
+   85                      | expr_binary_operation . '/' expr_binary_operation
+   86                      | expr_binary_operation . '%' expr_binary_operation
+   87                      | expr_binary_operation . grt expr_binary_operation
+   88                      | expr_binary_operation . geq expr_binary_operation
+   89                      | expr_binary_operation . lrt expr_binary_operation
+   90                      | expr_binary_operation . leq expr_binary_operation
+
+    '+'  сдвиг, и переход в состояние 94
+    '-'  сдвиг, и переход в состояние 95
+    '*'  сдвиг, и переход в состояние 96
+    '/'  сдвиг, и переход в состояние 97
+    '%'  сдвиг, и переход в состояние 98
+
+    $default  вывод с использованием правила 81 (expr_binary_operation)
+
+
+Состояние 138
 
    48 assignment: LET MUT lvalue maybe_assignment_type . '=' maybe_rvalue_prefix rvalue ';'
 
-    '='  сдвиг, и переход в состояние 167
+    '='  сдвиг, и переход в состояние 160
 
 
-Состояние 151
+Состояние 139
 
    47 assignment: LET lvalue maybe_assignment_type '=' . maybe_rvalue_prefix rvalue ';'
 
-    '&'  сдвиг, и переход в состояние 164
+    '&'  сдвиг, и переход в состояние 158
 
     $default  вывод с использованием правила 55 (maybe_rvalue_prefix)
 
-    maybe_rvalue_prefix  переход в состояние 168
+    maybe_rvalue_prefix  переход в состояние 161
 
 
-Состояние 152
+Состояние 140
 
    36 statements: statements . statement
    62 if_statement: IF expr '{' statements . '}'
@@ -2161,17 +2066,17 @@ comments (84)
     commentline  сдвиг, и переход в состояние 56
     '('          сдвиг, и переход в состояние 57
     '{'          сдвиг, и переход в состояние 58
-    '}'          сдвиг, и переход в состояние 169
+    '}'          сдвиг, и переход в состояние 162
     RETURN       сдвиг, и переход в состояние 60
 
-    array_subscription     переход в состояние 61
+    array_indexing         переход в состояние 61
     statement              переход в состояние 62
     return_token_expr      переход в состояние 63
     assignment             переход в состояние 64
     lvalue                 переход в состояние 65
     if_statement           переход в состояние 66
     while_statement        переход в состояние 67
-    expr                   переход в состояние 132
+    expr                   переход в состояние 121
     expr_binary_operation  переход в состояние 69
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
@@ -2179,10 +2084,10 @@ comments (84)
     comments               переход в состояние 73
 
 
-Состояние 153
+Состояние 141
 
-   36 statements: statements . statement
-   65 while_statement: WHILE expr '{' statements . '}'
+   65 while_statement: WHILE expr '{' statements_in_while . '}'
+   66 statements_in_while: statements_in_while . statement_in_while
 
     LET          сдвиг, и переход в состояние 47
     IF           сдвиг, и переход в состояние 48
@@ -2195,413 +2100,610 @@ comments (84)
     '*'          сдвиг, и переход в состояние 55
     commentline  сдвиг, и переход в состояние 56
     '('          сдвиг, и переход в состояние 57
-    '{'          сдвиг, и переход в состояние 58
-    '}'          сдвиг, и переход в состояние 170
+    '{'          сдвиг, и переход в состояние 163
+    '}'          сдвиг, и переход в состояние 164
     RETURN       сдвиг, и переход в состояние 60
+    BREAK        сдвиг, и переход в состояние 165
+    CONTINUE     сдвиг, и переход в состояние 166
 
-    array_subscription     переход в состояние 61
-    statement              переход в состояние 62
-    return_token_expr      переход в состояние 63
-    assignment             переход в состояние 64
+    array_indexing         переход в состояние 61
+    return_token_expr      переход в состояние 167
+    assignment             переход в состояние 168
     lvalue                 переход в состояние 65
-    if_statement           переход в состояние 66
-    while_statement        переход в состояние 67
-    expr                   переход в состояние 132
+    if_statement           переход в состояние 169
+    while_statement        переход в состояние 170
+    statement_in_while     переход в состояние 171
+    expr                   переход в состояние 172
     expr_binary_operation  переход в состояние 69
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
-    comments               переход в состояние 73
+    comments               переход в состояние 173
+
+
+Состояние 142
+
+  108 arg: '&' MUT . expr_for_passing
+
+    number       сдвиг, и переход в состояние 143
+    ident        сдвиг, и переход в состояние 144
+    string       сдвиг, и переход в состояние 145
+    macro_ident  сдвиг, и переход в состояние 53
+    '('          сдвиг, и переход в состояние 146
+    '['          сдвиг, и переход в состояние 147
+
+    array_rvalue         переход в состояние 148
+    macro_function_call  переход в состояние 149
+    function_call        переход в состояние 150
+    expr_for_passing     переход в состояние 174
+    non_brackets_expr    переход в состояние 152
+
+
+Состояние 143
+
+  111 non_brackets_expr: number .
+
+    $default  вывод с использованием правила 111 (non_brackets_expr)
+
+
+Состояние 144
+
+  101 function_call: ident . '(' maybe_args ')'
+  113 non_brackets_expr: ident .
+
+    '('  сдвиг, и переход в состояние 82
+
+    $default  вывод с использованием правила 113 (non_brackets_expr)
+
+
+Состояние 145
+
+  116 non_brackets_expr: string .
+
+    $default  вывод с использованием правила 116 (non_brackets_expr)
+
+
+Состояние 146
+
+  110 expr_for_passing: '(' . expr ')'
+
+    number       сдвиг, и переход в состояние 50
+    ident        сдвиг, и переход в состояние 78
+    string       сдвиг, и переход в состояние 52
+    macro_ident  сдвиг, и переход в состояние 53
+    '-'          сдвиг, и переход в состояние 54
+    '('          сдвиг, и переход в состояние 57
+
+    array_indexing         переход в состояние 79
+    expr                   переход в состояние 175
+    expr_binary_operation  переход в состояние 69
+    expr_token             переход в состояние 70
+    macro_function_call    переход в состояние 71
+    function_call          переход в состояние 72
+
+
+Состояние 147
+
+   24 array_rvalue: '[' . maybe_exprs ']'
+
+    number       сдвиг, и переход в состояние 50
+    ident        сдвиг, и переход в состояние 78
+    string       сдвиг, и переход в состояние 52
+    macro_ident  сдвиг, и переход в состояние 53
+    '-'          сдвиг, и переход в состояние 54
+    '('          сдвиг, и переход в состояние 57
+
+    $default  вывод с использованием правила 27 (maybe_exprs)
+
+    array_indexing         переход в состояние 79
+    maybe_exprs            переход в состояние 176
+    exprs                  переход в состояние 177
+    expr                   переход в состояние 178
+    expr_binary_operation  переход в состояние 69
+    expr_token             переход в состояние 70
+    macro_function_call    переход в состояние 71
+    function_call          переход в состояние 72
+
+
+Состояние 148
+
+  112 non_brackets_expr: array_rvalue .
+
+    $default  вывод с использованием правила 112 (non_brackets_expr)
+
+
+Состояние 149
+
+  115 non_brackets_expr: macro_function_call .
+
+    $default  вывод с использованием правила 115 (non_brackets_expr)
+
+
+Состояние 150
+
+  114 non_brackets_expr: function_call .
+
+    $default  вывод с использованием правила 114 (non_brackets_expr)
+
+
+Состояние 151
+
+  107 arg: '&' expr_for_passing .
+
+    $default  вывод с использованием правила 107 (arg)
+
+
+Состояние 152
+
+  109 expr_for_passing: non_brackets_expr .
+
+    $default  вывод с использованием правила 109 (expr_for_passing)
+
+
+Состояние 153
+
+  101 function_call: ident '(' maybe_args ')' .
+
+    $default  вывод с использованием правила 101 (function_call)
 
 
 Состояние 154
 
-   99 expr_for_passing: '(' expr . ')'
+  105 args: args ',' . arg
 
-    ')'  сдвиг, и переход в состояние 171
+    number       сдвиг, и переход в состояние 50
+    ident        сдвиг, и переход в состояние 78
+    string       сдвиг, и переход в состояние 52
+    macro_ident  сдвиг, и переход в состояние 53
+    '-'          сдвиг, и переход в состояние 54
+    '('          сдвиг, и переход в состояние 57
+    '&'          сдвиг, и переход в состояние 111
+
+    array_indexing         переход в состояние 79
+    expr                   переход в состояние 112
+    expr_binary_operation  переход в состояние 69
+    expr_token             переход в состояние 70
+    macro_function_call    переход в состояние 71
+    function_call          переход в состояние 72
+    arg                    переход в состояние 179
 
 
 Состояние 155
 
-   24 array_rvalue: '[' maybe_exprs . ']'
+   25 array_indexing: ident '[' expr ']' .
 
-    ']'  сдвиг, и переход в состояние 172
+    $default  вывод с использованием правила 25 (array_indexing)
 
 
 Состояние 156
 
-   25 array_rvalue: '[' expr . ';' number ']'
-   27 maybe_exprs: expr .
-   28            | expr . ',' expr
+  100 macro_function_call: macro_ident '(' maybe_args ')' .
 
-    ';'  сдвиг, и переход в состояние 173
-    ','  сдвиг, и переход в состояние 174
-
-    $default  вывод с использованием правила 27 (maybe_exprs)
+    $default  вывод с использованием правила 100 (macro_function_call)
 
 
 Состояние 157
 
-   97 arg: '&' MUT . expr_for_passing
+   49 assignment: '*' lvalue maybe_assignment_type '=' . maybe_rvalue_prefix rvalue ';'
 
-    number       сдвиг, и переход в состояние 113
-    ident        сдвиг, и переход в состояние 114
-    string       сдвиг, и переход в состояние 115
-    macro_ident  сдвиг, и переход в состояние 53
-    '('          сдвиг, и переход в состояние 116
-    '['          сдвиг, и переход в состояние 117
+    '&'  сдвиг, и переход в состояние 158
 
-    array_rvalue         переход в состояние 119
-    macro_function_call  переход в состояние 120
-    function_call        переход в состояние 121
-    expr_for_passing     переход в состояние 175
-    non_brackets_expr    переход в состояние 126
+    $default  вывод с использованием правила 55 (maybe_rvalue_prefix)
+
+    maybe_rvalue_prefix  переход в состояние 180
 
 
 Состояние 158
 
-   96 arg: '&' expr_for_passing .
-
-    $default  вывод с использованием правила 96 (arg)
-
-
-Состояние 159
-
-   90 function_call: ident '(' maybe_args ')' .
-
-    $default  вывод с использованием правила 90 (function_call)
-
-
-Состояние 160
-
-   94 args: args ',' . arg
-
-    number       сдвиг, и переход в состояние 113
-    ident        сдвиг, и переход в состояние 114
-    string       сдвиг, и переход в состояние 115
-    macro_ident  сдвиг, и переход в состояние 53
-    '('          сдвиг, и переход в состояние 116
-    '['          сдвиг, и переход в состояние 117
-    '&'          сдвиг, и переход в состояние 118
-
-    array_rvalue         переход в состояние 119
-    macro_function_call  переход в состояние 120
-    function_call        переход в состояние 121
-    arg                  переход в состояние 176
-    expr_for_passing     переход в состояние 125
-    non_brackets_expr    переход в состояние 126
-
-
-Состояние 161
-
-   26 array_subscription: ident '[' expr ']' .
-
-    $default  вывод с использованием правила 26 (array_subscription)
-
-
-Состояние 162
-
-   89 macro_function_call: macro_ident '(' maybe_args ')' .
-
-    $default  вывод с использованием правила 89 (macro_function_call)
-
-
-Состояние 163
-
-   49 assignment: '*' lvalue maybe_assignment_type '=' . maybe_rvalue_prefix rvalue ';'
-
-    '&'  сдвиг, и переход в состояние 164
-
-    $default  вывод с использованием правила 55 (maybe_rvalue_prefix)
-
-    maybe_rvalue_prefix  переход в состояние 177
-
-
-Состояние 164
-
    53 maybe_rvalue_prefix: '&' .
    54                    | '&' . MUT
 
-    MUT  сдвиг, и переход в состояние 178
+    MUT  сдвиг, и переход в состояние 181
 
     $default  вывод с использованием правила 53 (maybe_rvalue_prefix)
 
 
-Состояние 165
+Состояние 159
 
    50 assignment: lvalue maybe_assignment_type '=' maybe_rvalue_prefix . rvalue ';'
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
-    '{'          сдвиг, и переход в состояние 179
-    '['          сдвиг, и переход в состояние 117
+    '{'          сдвиг, и переход в состояние 182
+    '['          сдвиг, и переход в состояние 147
 
-    array_rvalue           переход в состояние 180
-    array_subscription     переход в состояние 80
-    rvalue                 переход в состояние 181
-    expr                   переход в состояние 182
+    array_rvalue           переход в состояние 183
+    array_indexing         переход в состояние 79
+    rvalue                 переход в состояние 184
+    expr                   переход в состояние 185
     expr_binary_operation  переход в состояние 69
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
 
 
-Состояние 166
-
-   23 array_or_slice_type: '[' ident ']' '[' ident ';' number . ']'
-
-    ']'  сдвиг, и переход в состояние 183
-
-
-Состояние 167
+Состояние 160
 
    48 assignment: LET MUT lvalue maybe_assignment_type '=' . maybe_rvalue_prefix rvalue ';'
 
-    '&'  сдвиг, и переход в состояние 164
+    '&'  сдвиг, и переход в состояние 158
 
     $default  вывод с использованием правила 55 (maybe_rvalue_prefix)
 
-    maybe_rvalue_prefix  переход в состояние 184
+    maybe_rvalue_prefix  переход в состояние 186
 
 
-Состояние 168
+Состояние 161
 
    47 assignment: LET lvalue maybe_assignment_type '=' maybe_rvalue_prefix . rvalue ';'
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
-    '{'          сдвиг, и переход в состояние 179
-    '['          сдвиг, и переход в состояние 117
+    '{'          сдвиг, и переход в состояние 182
+    '['          сдвиг, и переход в состояние 147
 
-    array_rvalue           переход в состояние 180
-    array_subscription     переход в состояние 80
-    rvalue                 переход в состояние 185
-    expr                   переход в состояние 182
+    array_rvalue           переход в состояние 183
+    array_indexing         переход в состояние 79
+    rvalue                 переход в состояние 187
+    expr                   переход в состояние 185
     expr_binary_operation  переход в состояние 69
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
 
 
-Состояние 169
+Состояние 162
 
    62 if_statement: IF expr '{' statements '}' .
    63             | IF expr '{' statements '}' . ELSE '{' statements '}'
    64             | IF expr '{' statements '}' . ELSE if_statement
 
-    ELSE  сдвиг, и переход в состояние 186
+    ELSE  сдвиг, и переход в состояние 188
 
     $default  вывод с использованием правила 62 (if_statement)
 
 
-Состояние 170
+Состояние 163
 
-   65 while_statement: WHILE expr '{' statements '}' .
+   74 statement_in_while: '{' . statements_in_while '}'
+
+    $default  вывод с использованием правила 67 (statements_in_while)
+
+    statements_in_while  переход в состояние 189
+
+
+Состояние 164
+
+   65 while_statement: WHILE expr '{' statements_in_while '}' .
 
     $default  вывод с использованием правила 65 (while_statement)
 
 
+Состояние 165
+
+   75 statement_in_while: BREAK . ';'
+
+    ';'  сдвиг, и переход в состояние 190
+
+
+Состояние 166
+
+   76 statement_in_while: CONTINUE . ';'
+
+    ';'  сдвиг, и переход в состояние 191
+
+
+Состояние 167
+
+   73 statement_in_while: return_token_expr .
+
+    $default  вывод с использованием правила 73 (statement_in_while)
+
+
+Состояние 168
+
+   69 statement_in_while: assignment .
+
+    $default  вывод с использованием правила 69 (statement_in_while)
+
+
+Состояние 169
+
+   70 statement_in_while: if_statement .
+
+    $default  вывод с использованием правила 70 (statement_in_while)
+
+
+Состояние 170
+
+   71 statement_in_while: while_statement .
+
+    $default  вывод с использованием правила 71 (statement_in_while)
+
+
 Состояние 171
 
-   99 expr_for_passing: '(' expr ')' .
+   66 statements_in_while: statements_in_while statement_in_while .
 
-    $default  вывод с использованием правила 99 (expr_for_passing)
+    $default  вывод с использованием правила 66 (statements_in_while)
 
 
 Состояние 172
 
-   24 array_rvalue: '[' maybe_exprs ']' .
+   68 statement_in_while: expr . ';'
 
-    $default  вывод с использованием правила 24 (array_rvalue)
+    ';'  сдвиг, и переход в состояние 192
 
 
 Состояние 173
 
-   25 array_rvalue: '[' expr ';' . number ']'
+   72 statement_in_while: comments .
 
-    number  сдвиг, и переход в состояние 187
+    $default  вывод с использованием правила 72 (statement_in_while)
 
 
 Состояние 174
 
-   28 maybe_exprs: expr ',' . expr
+  108 arg: '&' MUT expr_for_passing .
 
-    number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
-    string       сдвиг, и переход в состояние 52
-    macro_ident  сдвиг, и переход в состояние 53
-    '-'          сдвиг, и переход в состояние 54
-    '('          сдвиг, и переход в состояние 57
-
-    array_subscription     переход в состояние 80
-    expr                   переход в состояние 188
-    expr_binary_operation  переход в состояние 69
-    expr_token             переход в состояние 70
-    macro_function_call    переход в состояние 71
-    function_call          переход в состояние 72
+    $default  вывод с использованием правила 108 (arg)
 
 
 Состояние 175
 
-   97 arg: '&' MUT expr_for_passing .
+  110 expr_for_passing: '(' expr . ')'
 
-    $default  вывод с использованием правила 97 (arg)
+    ')'  сдвиг, и переход в состояние 193
 
 
 Состояние 176
 
-   94 args: args ',' arg .
+   24 array_rvalue: '[' maybe_exprs . ']'
 
-    $default  вывод с использованием правила 94 (args)
+    ']'  сдвиг, и переход в состояние 194
 
 
 Состояние 177
 
+   26 maybe_exprs: exprs .
+   29 exprs: exprs . ',' expr
+
+    ','  сдвиг, и переход в состояние 195
+
+    $default  вывод с использованием правила 26 (maybe_exprs)
+
+
+Состояние 178
+
+   28 exprs: expr .
+
+    $default  вывод с использованием правила 28 (exprs)
+
+
+Состояние 179
+
+  105 args: args ',' arg .
+
+    $default  вывод с использованием правила 105 (args)
+
+
+Состояние 180
+
    49 assignment: '*' lvalue maybe_assignment_type '=' maybe_rvalue_prefix . rvalue ';'
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
-    '{'          сдвиг, и переход в состояние 179
-    '['          сдвиг, и переход в состояние 117
+    '{'          сдвиг, и переход в состояние 182
+    '['          сдвиг, и переход в состояние 147
 
-    array_rvalue           переход в состояние 180
-    array_subscription     переход в состояние 80
-    rvalue                 переход в состояние 189
-    expr                   переход в состояние 182
+    array_rvalue           переход в состояние 183
+    array_indexing         переход в состояние 79
+    rvalue                 переход в состояние 196
+    expr                   переход в состояние 185
     expr_binary_operation  переход в состояние 69
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
 
 
-Состояние 178
+Состояние 181
 
    54 maybe_rvalue_prefix: '&' MUT .
 
     $default  вывод с использованием правила 54 (maybe_rvalue_prefix)
 
 
-Состояние 179
+Состояние 182
 
    58 rvalue: '{' . return_expression '}'
    59       | '{' . statements '}'
 
     $default  вывод с использованием правила 37 (statements)
 
-    return_expression  переход в состояние 190
-    statements         переход в состояние 191
+    return_expression  переход в состояние 197
+    statements         переход в состояние 198
 
 
-Состояние 180
+Состояние 183
 
    57 rvalue: array_rvalue .
 
     $default  вывод с использованием правила 57 (rvalue)
 
 
-Состояние 181
+Состояние 184
 
    50 assignment: lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue . ';'
 
-    ';'  сдвиг, и переход в состояние 192
+    ';'  сдвиг, и переход в состояние 199
 
 
-Состояние 182
+Состояние 185
 
    56 rvalue: expr .
 
     $default  вывод с использованием правила 56 (rvalue)
 
 
-Состояние 183
-
-   23 array_or_slice_type: '[' ident ']' '[' ident ';' number ']' .
-
-    $default  вывод с использованием правила 23 (array_or_slice_type)
-
-
-Состояние 184
+Состояние 186
 
    48 assignment: LET MUT lvalue maybe_assignment_type '=' maybe_rvalue_prefix . rvalue ';'
 
     number       сдвиг, и переход в состояние 50
-    ident        сдвиг, и переход в состояние 79
+    ident        сдвиг, и переход в состояние 78
     string       сдвиг, и переход в состояние 52
     macro_ident  сдвиг, и переход в состояние 53
     '-'          сдвиг, и переход в состояние 54
     '('          сдвиг, и переход в состояние 57
-    '{'          сдвиг, и переход в состояние 179
-    '['          сдвиг, и переход в состояние 117
+    '{'          сдвиг, и переход в состояние 182
+    '['          сдвиг, и переход в состояние 147
 
-    array_rvalue           переход в состояние 180
-    array_subscription     переход в состояние 80
-    rvalue                 переход в состояние 193
-    expr                   переход в состояние 182
+    array_rvalue           переход в состояние 183
+    array_indexing         переход в состояние 79
+    rvalue                 переход в состояние 200
+    expr                   переход в состояние 185
     expr_binary_operation  переход в состояние 69
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
     function_call          переход в состояние 72
 
 
-Состояние 185
+Состояние 187
 
    47 assignment: LET lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue . ';'
 
-    ';'  сдвиг, и переход в состояние 194
+    ';'  сдвиг, и переход в состояние 201
 
 
-Состояние 186
+Состояние 188
 
    63 if_statement: IF expr '{' statements '}' ELSE . '{' statements '}'
    64             | IF expr '{' statements '}' ELSE . if_statement
 
     IF   сдвиг, и переход в состояние 48
-    '{'  сдвиг, и переход в состояние 195
+    '{'  сдвиг, и переход в состояние 202
 
-    if_statement  переход в состояние 196
-
-
-Состояние 187
-
-   25 array_rvalue: '[' expr ';' number . ']'
-
-    ']'  сдвиг, и переход в состояние 197
-
-
-Состояние 188
-
-   28 maybe_exprs: expr ',' expr .
-
-    $default  вывод с использованием правила 28 (maybe_exprs)
+    if_statement  переход в состояние 203
 
 
 Состояние 189
 
-   49 assignment: '*' lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue . ';'
+   66 statements_in_while: statements_in_while . statement_in_while
+   74 statement_in_while: '{' statements_in_while . '}'
 
-    ';'  сдвиг, и переход в состояние 198
+    LET          сдвиг, и переход в состояние 47
+    IF           сдвиг, и переход в состояние 48
+    WHILE        сдвиг, и переход в состояние 49
+    number       сдвиг, и переход в состояние 50
+    ident        сдвиг, и переход в состояние 51
+    string       сдвиг, и переход в состояние 52
+    macro_ident  сдвиг, и переход в состояние 53
+    '-'          сдвиг, и переход в состояние 54
+    '*'          сдвиг, и переход в состояние 55
+    commentline  сдвиг, и переход в состояние 56
+    '('          сдвиг, и переход в состояние 57
+    '{'          сдвиг, и переход в состояние 163
+    '}'          сдвиг, и переход в состояние 204
+    RETURN       сдвиг, и переход в состояние 60
+    BREAK        сдвиг, и переход в состояние 165
+    CONTINUE     сдвиг, и переход в состояние 166
+
+    array_indexing         переход в состояние 61
+    return_token_expr      переход в состояние 167
+    assignment             переход в состояние 168
+    lvalue                 переход в состояние 65
+    if_statement           переход в состояние 169
+    while_statement        переход в состояние 170
+    statement_in_while     переход в состояние 171
+    expr                   переход в состояние 172
+    expr_binary_operation  переход в состояние 69
+    expr_token             переход в состояние 70
+    macro_function_call    переход в состояние 71
+    function_call          переход в состояние 72
+    comments               переход в состояние 173
 
 
 Состояние 190
 
-   58 rvalue: '{' return_expression . '}'
+   75 statement_in_while: BREAK ';' .
 
-    '}'  сдвиг, и переход в состояние 199
+    $default  вывод с использованием правила 75 (statement_in_while)
 
 
 Состояние 191
+
+   76 statement_in_while: CONTINUE ';' .
+
+    $default  вывод с использованием правила 76 (statement_in_while)
+
+
+Состояние 192
+
+   68 statement_in_while: expr ';' .
+
+    $default  вывод с использованием правила 68 (statement_in_while)
+
+
+Состояние 193
+
+  110 expr_for_passing: '(' expr ')' .
+
+    $default  вывод с использованием правила 110 (expr_for_passing)
+
+
+Состояние 194
+
+   24 array_rvalue: '[' maybe_exprs ']' .
+
+    $default  вывод с использованием правила 24 (array_rvalue)
+
+
+Состояние 195
+
+   29 exprs: exprs ',' . expr
+
+    number       сдвиг, и переход в состояние 50
+    ident        сдвиг, и переход в состояние 78
+    string       сдвиг, и переход в состояние 52
+    macro_ident  сдвиг, и переход в состояние 53
+    '-'          сдвиг, и переход в состояние 54
+    '('          сдвиг, и переход в состояние 57
+
+    array_indexing         переход в состояние 79
+    expr                   переход в состояние 205
+    expr_binary_operation  переход в состояние 69
+    expr_token             переход в состояние 70
+    macro_function_call    переход в состояние 71
+    function_call          переход в состояние 72
+
+
+Состояние 196
+
+   49 assignment: '*' lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue . ';'
+
+    ';'  сдвиг, и переход в состояние 206
+
+
+Состояние 197
+
+   58 rvalue: '{' return_expression . '}'
+
+    '}'  сдвиг, и переход в состояние 207
+
+
+Состояние 198
 
    35 return_expression: statements . expr
    36 statements: statements . statement
@@ -2619,10 +2721,10 @@ comments (84)
     commentline  сдвиг, и переход в состояние 56
     '('          сдвиг, и переход в состояние 57
     '{'          сдвиг, и переход в состояние 58
-    '}'          сдвиг, и переход в состояние 200
+    '}'          сдвиг, и переход в состояние 208
     RETURN       сдвиг, и переход в состояние 60
 
-    array_subscription     переход в состояние 61
+    array_indexing         переход в состояние 61
     statement              переход в состояние 62
     return_token_expr      переход в состояние 63
     assignment             переход в состояние 64
@@ -2637,79 +2739,86 @@ comments (84)
     comments               переход в состояние 73
 
 
-Состояние 192
+Состояние 199
 
    50 assignment: lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';' .
 
     $default  вывод с использованием правила 50 (assignment)
 
 
-Состояние 193
+Состояние 200
 
    48 assignment: LET MUT lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue . ';'
 
-    ';'  сдвиг, и переход в состояние 201
+    ';'  сдвиг, и переход в состояние 209
 
 
-Состояние 194
+Состояние 201
 
    47 assignment: LET lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';' .
 
     $default  вывод с использованием правила 47 (assignment)
 
 
-Состояние 195
+Состояние 202
 
    63 if_statement: IF expr '{' statements '}' ELSE '{' . statements '}'
 
     $default  вывод с использованием правила 37 (statements)
 
-    statements  переход в состояние 202
+    statements  переход в состояние 210
 
 
-Состояние 196
+Состояние 203
 
    64 if_statement: IF expr '{' statements '}' ELSE if_statement .
 
     $default  вывод с использованием правила 64 (if_statement)
 
 
-Состояние 197
+Состояние 204
 
-   25 array_rvalue: '[' expr ';' number ']' .
+   74 statement_in_while: '{' statements_in_while '}' .
 
-    $default  вывод с использованием правила 25 (array_rvalue)
+    $default  вывод с использованием правила 74 (statement_in_while)
 
 
-Состояние 198
+Состояние 205
+
+   29 exprs: exprs ',' expr .
+
+    $default  вывод с использованием правила 29 (exprs)
+
+
+Состояние 206
 
    49 assignment: '*' lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';' .
 
     $default  вывод с использованием правила 49 (assignment)
 
 
-Состояние 199
+Состояние 207
 
    58 rvalue: '{' return_expression '}' .
 
     $default  вывод с использованием правила 58 (rvalue)
 
 
-Состояние 200
+Состояние 208
 
    59 rvalue: '{' statements '}' .
 
     $default  вывод с использованием правила 59 (rvalue)
 
 
-Состояние 201
+Состояние 209
 
    48 assignment: LET MUT lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';' .
 
     $default  вывод с использованием правила 48 (assignment)
 
 
-Состояние 202
+Состояние 210
 
    36 statements: statements . statement
    63 if_statement: IF expr '{' statements '}' ELSE '{' statements . '}'
@@ -2726,17 +2835,17 @@ comments (84)
     commentline  сдвиг, и переход в состояние 56
     '('          сдвиг, и переход в состояние 57
     '{'          сдвиг, и переход в состояние 58
-    '}'          сдвиг, и переход в состояние 203
+    '}'          сдвиг, и переход в состояние 211
     RETURN       сдвиг, и переход в состояние 60
 
-    array_subscription     переход в состояние 61
+    array_indexing         переход в состояние 61
     statement              переход в состояние 62
     return_token_expr      переход в состояние 63
     assignment             переход в состояние 64
     lvalue                 переход в состояние 65
     if_statement           переход в состояние 66
     while_statement        переход в состояние 67
-    expr                   переход в состояние 132
+    expr                   переход в состояние 121
     expr_binary_operation  переход в состояние 69
     expr_token             переход в состояние 70
     macro_function_call    переход в состояние 71
@@ -2744,7 +2853,7 @@ comments (84)
     comments               переход в состояние 73
 
 
-Состояние 203
+Состояние 211
 
    63 if_statement: IF expr '{' statements '}' ELSE '{' statements '}' .
 

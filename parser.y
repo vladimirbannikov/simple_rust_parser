@@ -20,7 +20,7 @@
 
 %token			'=' commentline quote
 
-%token			'(' ')' '{' '}' '[' ']' ';'
+%token			'(' ')' '{' '}' '[' ']' ';' ','
 
 %token 			':' '&' RIGHT_ARROW
 
@@ -30,7 +30,7 @@
 %left			and or '!'
 %left			lrt grt eqt neq leq geq
 %left			'*' '/' '%' 
-%left			'+' '-'		
+%left			'+' '-'	
 			
 			
 %start crate;
@@ -95,22 +95,26 @@ raw_type:
 
 array_or_slice_type:
 	'[' ident ']'
-	'[' ident ';' number ']'
+	//'[' ident ';' number ']'
 ;
 
 array_rvalue:
 	'[' maybe_exprs ']'
-	| '[' expr ';' number ']'
+	//| '[' expr ';' number ']'
 ;
 
-array_subscription:
+array_indexing:
 	ident '[' expr ']'
 ;
 
 maybe_exprs:
-	expr
-	| expr ',' expr
+	exprs
 	| %empty
+;
+
+exprs:
+	expr
+	| exprs ',' expr
 ;
 
 maybe_return_type:
@@ -159,9 +163,10 @@ assignment:
 	| lvalue maybe_assignment_type '=' maybe_rvalue_prefix rvalue ';'
 ;
 
+
 lvalue:
 	ident
-	| array_subscription 
+	| array_indexing 
 ;
 
 maybe_rvalue_prefix:
@@ -192,8 +197,25 @@ if_statement:
 
 
 while_statement:
-		WHILE expr '{' statements '}' 
+		WHILE expr '{' statements_in_while '}' 
 ; 
+
+statements_in_while:   	
+	statements_in_while statement_in_while 
+	|	%empty
+;
+
+statement_in_while:  
+	expr ';'
+	| assignment 
+	| if_statement 
+	| while_statement 
+	| comments 
+	| return_token_expr
+	| '{' statements_in_while '}'
+	| BREAK ';'
+	| CONTINUE ';'
+;
 
 
 expr:
@@ -256,7 +278,7 @@ expr_token:
 	| string
 	| function_call
 	| macro_function_call
-	| array_subscription
+	| array_indexing
 ;
 
 macro_function_call:
@@ -281,7 +303,7 @@ args
 
 
 arg:
-	expr_for_passing
+	expr
 	| '&' expr_for_passing
 	| '&' MUT expr_for_passing
 ;
