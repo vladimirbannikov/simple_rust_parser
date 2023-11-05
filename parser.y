@@ -11,23 +11,25 @@
 }
 			
 			
-%token			FN
+%token			FN attribute
 %token			LET MUT IF ELSE WHILE LOOP FOR IN
 			
-%token			number real_number ident string macro_ident
+%token			lit_integer lit_real ident line_string line_bstring multiline_string multiline_bstring macro_ident char_
 %token			'+' '-' '*' '/' '%'
 %token			'!' and or eqt grt geq lrt leq neq
 
-%token			'=' commentline quote
+%token			'=' commentline comment_block
 
 %token			'(' ')' '{' '}' '[' ']' ';' ','
 
-%token 			':' '&' RIGHT_ARROW
+%token 			':' '&' RIGHT_ARROW '#'
 
 %token			CONST RETURN BREAK CONTINUE DOTDOT
+
+%token 			resolution_operator '|'
 			
 
-%left			and or '!'
+%left			and or '!' DOTDOT '='
 %left			lrt grt eqt neq leq geq
 %left			'*' '/' '%' 
 %left			'+' '-'	
@@ -50,6 +52,8 @@ global_items:
 
 global_item:
 	function
+	| comment_block
+	| attribute
 ;
 
 function:
@@ -95,12 +99,12 @@ raw_type:
 
 array_or_slice_type:
 	'[' ident ']'
-	//'[' ident ';' number ']'
+	'[' ident ';' number ']'
 ;
 
 array_rvalue:
 	'[' maybe_exprs ']'
-	//| '[' expr ';' number ']'
+	| '[' expr ';' number ']'
 ;
 
 array_indexing:
@@ -201,18 +205,9 @@ if_statement:
 cycle_statement:
 	WHILE expr '{' statements_in_cycle '}' 
 	| LOOP '{' statements_in_cycle '}'
-	| FOR ident IN for_range '{' statements_in_cycle '}'
+	| FOR ident IN expr '{' statements_in_cycle '}'
 ; 
 
-
-for_range:
-	range
-;
-
-range:
-	expr DOTDOT expr
-	| expr DOTDOT '=' expr
-;
 
 statements_in_cycle:   	
 	statements_in_cycle statement_in_cycle 
@@ -234,6 +229,7 @@ statement_in_cycle:
 
 expr:
 	expr_binary_operation
+	| DOTDOT
 ;
 
 //expr_comparison_operation:
@@ -257,6 +253,9 @@ expr_binary_operation:
 	| expr_binary_operation geq expr_binary_operation
 	| expr_binary_operation lrt expr_binary_operation
 	| expr_binary_operation leq expr_binary_operation
+	| expr_binary_operation DOTDOT expr_binary_operation
+	| expr_binary_operation DOTDOT '=' expr_binary_operation
+	| expr_binary_operation DOTDOT '=' '*' expr_binary_operation
 	| '(' expr_binary_operation ')'
 	| expr_token
 ;
@@ -288,13 +287,34 @@ comparison_operator:
 expr_token:
 	number 
 	| '-' number 
-	| real_number
-	| '-' real_number
 	| ident 
-	| string
+	| string 
+	| char_
 	| function_call
 	| macro_function_call
 	| array_indexing
+	| method_or_field
+;
+
+number:
+	lit_integer 
+	| lit_real
+;
+
+method_or_field:
+	ident resolution_operator method_or_field_2
+	| ident '.' method_or_field_2
+	| function_call resolution_operator method_or_field_2
+	| function_call '.' method_or_field_2
+;
+
+method_or_field_2:
+	ident
+	| function_call
+	| ident resolution_operator method_or_field_2
+	| ident '.' method_or_field_2
+	| function_call resolution_operator method_or_field_2
+	| function_call '.' method_or_field_2
 ;
 
 macro_function_call:
@@ -320,8 +340,12 @@ args
 
 arg:
 	expr
+	| array_rvalue
 	| '&' expr_for_passing
 	| '&' MUT expr_for_passing
+	| '|' ident '|' non_brackets_expr
+	| '|' ident '|' '{' statements '}'
+	| '|' ident '|' '{' return_expression '}'
 ;
 
 
@@ -333,12 +357,19 @@ expr_for_passing:
 
 non_brackets_expr:
 	number
-	| array_rvalue
 	| ident
 	| function_call
 	| macro_function_call
 	| string
-	//| range
+	| char_ 
+	| method_or_field
+;
+
+string:
+	line_string
+	| line_bstring
+	| multiline_string
+	| multiline_bstring
 ;
 
 

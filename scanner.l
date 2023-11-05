@@ -19,8 +19,8 @@ int yyline = 1;
 
 "let" { return LET; }
 "mut" { return MUT; }
-"true" { return number; }
-"false" { return number; }
+"true" { return lit_integer; }
+"false" { return lit_integer; }
 "if" { return IF; }
 "else" { return ELSE; }
 
@@ -29,11 +29,13 @@ int yyline = 1;
 "for" { return FOR; }
 "in" { return IN; }
 
-"." { return '.'; }
 ".." { return DOTDOT; }
+"." { return '.'; }
+"::" {return resolution_operator;}
 
 "!" { return '!'; }
 "&&" { return and; }
+"|" { return '|'; }
 "||" { return or; }
 "==" { return eqt; }
 "!=" { return neq; }
@@ -57,6 +59,8 @@ int yyline = 1;
 "/" { return '/'; }
 "%" { return '%'; }
 
+"#".*"\n" { return attribute; }
+
 ":" {return ':';}
 "&" {return '&';}
 "->" {return RIGHT_ARROW;}
@@ -68,11 +72,24 @@ int yyline = 1;
 "continue" {return CONTINUE;}
 
 
-[0-9]+ { return number; }
-[0-9][0-9_]*\.[0-9_]*([eE][-\+]?[0-9_]+)? { return real_number; }
+0x[0-9a-fA-F_]+([eEuif][-\+]?[0-9_]+)?   { return lit_integer; }
+0o[0-7_]+([eEuif][-\+]?[0-9_]+)?         { return lit_integer; }
+0b[01_]+([eEuif][-\+]?[0-9_]+)?         { return lit_integer; }
+[0-9][0-9_]*([eEuif][-\+]?[0-9_]+)?      { return lit_integer; }
+[0-9][0-9_]*\.[0-9][0-9_]*([eE][-\+]?[0-9_]+)?          { return lit_real; }
 [a-zA-Z_][a-zA-Z_0-9]* {  return ident; }
 [a-zA-Z_][a-zA-Z_0-9]*! { return macro_ident; }
-\".*\" { return string; }
+\".*\" { return line_string; }
+\"(.*\\\n)+.+\" { return multiline_string; }
+b\".*\" { return line_bstring; }
+b\"(.*\\\n)+.+\" { return multiline_bstring; }
+
+
+
+\'.\' { return char_; }
+"/*"((\*+[^/*])|([^*]))*\**"*/" {return comment_block;}
+
+
 
 
 .  { yyerror("Lexer: unexpected character"); }
