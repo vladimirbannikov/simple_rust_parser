@@ -1,24 +1,1263 @@
-fn pci_config_read_u8(bus: u8, device: u8, func: u8, offset: u8) -> u8 {
-    (pci_config_read_u32(bus, device, func, offset & !3) >> ((offset % 4) * 8))/* as u8*/
+extern fn english(){
+	let thing1: u8 = 89.0 as u8;
+	let thing2: f32 = thing1 as f32 + 10.5;
+	let x: (i32, i32, i32)= (1, 2, 4) as (i32, i32, i32);
 }
 
-fn pci_config_read_u8(bus: u8, device: u8, func: u8, offset: u8) -> u8 {
-    (pci_config_read_u32(bus, device, func, offset & !3) >> ((offset % 4) * 8))/* as u8*/
+
+struct TraitObject {
+    data: *mut (),
+    vtable: *mut (),
 }
+
+#[link(name = "snappy")]
+pub unsafe trait Scary { }
+pub type Name = String;
+fn main()
+{
+static ref LOGGER: Mutex<Logger> = Mutex::new(Logger {
+        port
+    });
+	pub  extern fn addd_one(x: i32) -> i32
+	{
+		let k: i32;
+    	let t = 1;
+		let r = 4;
+		r + 1
+	}
+	
+	let my_num: i32 = 10;
+	let vs = (&vec![1,2], &[3,4]);
+	let (mut v, mm) = (vec![1,2], 5+6);
+	let mut x: String;
+	let r: i8 = 10;
+	let origin = Point3d { x: 0, y: 0, z: 0 };
+	10 & 15;
+	r;
+	let xxxx = 5;
+	match xxxx {
+    	1 => println!("er"),
+   	 	2 => println!("1"),
+    	3 => println!("3"),
+    	4 => println!("2"),
+   		5 => println!("5"),
+    	_ => println!("4545"),
+	}
+	let a = [0u8; 10];
+	let buf = b"whatever";
+	loop {}
+	for x in (0..10){
+    if x % 2 == 0 { continue; }
+
+    println!("{}", x);
+}
+	//et p_imm: *const u32 = &r as *const u32;
+	let hello = "Hello ".to_string();
+	let world = "world!".to_string();
+	let hello_world = hello + &world;
+	//baz(bar(foo));
+	let addr_string = "192.168.0.1:3000".to_string();
+    let c = Circle { x: 0.0, y: 0.0, radius: 2.0 };
+   // println!("{}", c.area());
+	let (mut xsd, ya) = (5, 6);
+	let x: &'static str = "HI world";
+	let ptr: *const u8 = &10u8 as *const u8;
+	const af: u8 = 10;	
+	println!("Hello friend + enemy");
+}
+
+fn inas() {
+	let c = Circle { x: 0.0f64, y: 0.0f64,radius: 1.0f64, };
+	 let s = Square {x: 0.0f64,
+        y: 0.0f64,
+        side: 1.0f64
+    };
+   // println!("площадь: {}", c.area());
+    println!("x: {}", c.x);
+    println!("y: {}", c.y);
+}
+
+
+struct Circle {
+    x: f64,
+    y: f64,
+    radius: f64,
+}
+
+fn add_one(x: i32) -> i32
+{
+	let k: i32;
+    let t = 1;
+	let r = 4;
+	r + 1
+}
+
+
+fn compair()
+{
+	
+	let plus_two = |x| {
+    let mut result: i32 = x;
+
+    result += 1;
+    result += 1;
+
+    result;
+};
+	let plus_one1 = |x: i32| x + 1;
+	let plus_one = |x: i32| -> i32 { x + 1; };
+	let n = 5;
+	print!("{} is negative", n);
+    if !n  < 0 as i32{
+        print!("{} is negative", n);
+    } else if n > 0 {
+        print!("{} is positive", n);
+    } else {
+        print!("{} is zero", n);
+    }
+
+    let mut big_n: i32 =
+        if n < 10 && n > -10 as i32 {
+            println!(", and is a small number, increase ten-fold");
+			10 * n
+        } else {
+            println!(", and is a big number, half the number");
+            n / 2
+        };
+	 println!("{} -> {}", n, big_n);
+}
+
+
+fn foo(v1: Vec<i32>, v2: Vec<i32>) -> (Vec<i32>, Vec<i32>, i32) {
+   
+    (v1, v2, 42)
+}
+
+
+fn looper()
+{
+	let mut a = 0;
+	let b = 4;
+	let c = loop{
+		if a >= b
+		{	
+			break a*2;
+		}
+		else
+		{
+			a += 1;
+			continue;
+		}
+	};
+}
+
+fn funcer()
+{
+    let mut counter = 0;
+
+    let result = while counter < 5 {
+        counter += 1;
+
+        if counter == 10 {
+            break ;
+        }
+    };
+	
+	let mut a = true;
+	let mut y = 1;
+	'metk: while a == true
+	{
+		if y == 8
+		{
+			a == false;
+			continue 'metk;
+		}
+		y *= 2;
+	}
+	
+}
+
+
+fn main() {
+    let mut state = XiCore::new();
+    let stdin = io::stdin();
+    let stdout = io::stdout();
+    let mut rpc_looper = RpcLoop::new(stdout);
+
+    let flags = get_flags();
+
+    let logfile_config = generate_logfile_config(&flags);
+
+    let logging_path_result = generate_logging_path(logfile_config);
+
+   let logging_path =
+        logging_path_result.as_ref().map(|PathBuf| -> &Path { p.as_path() }).ok();
+
+    if let Err(e) = setup_logging(logging_path) {
+        eprintln!("[ERROR] setup_logging returned error, logging not enabled: {:?}", e);
+    }
+    if let Err(e) = logging_path_result.as_ref() {
+        warn!("Unable to generate the logging path to pass to set up: {}", e);
+    }
+
+    match rpc_looper.mainloop( stdin.lock(), &mut state) {
+        Ok(_) => (),
+        Err(err) => {
+            error!("xi-core exited with error:\n{:?}", err);
+            process::exit(1);
+        }
+    }
+}
+
+fn get_flags() -> HashMap<String, Option<String>> {
+    let mut flags: HashMap<String, Option<String>> = HashMap::new();
+
+    let flag_prefix = "-";
+    let mut args_iterator = std::env::args().peekable();
+    while let Some(arg) = args_iterator.next() {
+        if arg.starts_with(flag_prefix) {
+            let key = arg.trim_start_matches(flag_prefix).to_string();
+
+            // Check the next argument doesn't start with the flag prefix
+            // map_or accounts for peek returning an Option
+            let next_arg_not_a_flag: bool =
+                args_iterator.peek().map_or(false, |val| !val.starts_with(flag_prefix));
+            if next_arg_not_a_flag {
+                flags.insert(key, args_iterator.next());
+            }
+        }
+    }
+    flags
+}
+
+
+fn setup_logging(logging_path: Option<&Path>) -> Result<(), fern::InitError> {
+    let level_filter = match std::env::var("XI_LOG") {
+        Ok(level) => match level.to_lowercase().as_ref() {
+            "trace" => log::LevelFilter::Trace,
+            "debug" => log::LevelFilter::Debug,
+            _ => log::LevelFilter::Info,
+        },
+        // Default to info
+        Err(_) => log::LevelFilter::Info,
+    };
+
+    let mut fern_dispatch = fern::Dispatch::new()
+        .format(|out, message, record| a /*{
+            out.finish(format_args!(
+                "{}[{}][{}] {}",
+                chrono::Local::now().format("[%Y-%m-%d][%H:%M:%S]"),
+                record.target(),
+                record.level(),
+                message,
+            )
+        }*/)
+        .level(level_filter)
+        .chain(io::stderr());
+
+    if let Some(logging_file_path) = logging_path {
+        create_log_directory(logging_file_path)?;
+
+        fern_dispatch = fern_dispatch.chain(fern::log_file(logging_file_path));
+    };
+
+    // Start fern
+    fern_dispatch.apply()?;
+    info!("Logging with fern is set up");
+
+    // Log details of the logging_file_path result using fern/log
+    // Either logging the path fern is outputting to or the error from obtaining the path
+    match logging_path {
+        Some(logging_file_path) => info!("Writing logs to: {}", logging_file_path.display()),
+        None => warn!("No path was supplied for the log file. Not saving logs to disk, falling back to just stderr"),
+    }
+    Ok(())
+}
+
+fn get_logging_directory_path(P:a<AsRef<Path>>) -> Result<PathBuf, io::Error> {
+    match dirs::data_local_dir() {
+        Some(mut log_dir) => {
+            log_dir.push(directory);
+            Ok(log_dir)
+        },
+        None => Err(io::Error::new(
+            io::ErrorKind::NotFound,
+            "No standard logging directory known for this platform",
+        )),
+    }
+}
+
+pub struct CharTryFromError(());
+
+#[stable(feature = "try_from", since = "1.34.0")]
+impl fmt::Display for CharTryFromError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        "converted integer out of range for `char`".fmt(f)
+    }
+}
+
+impl FromStr for char {
+    type Err = ParseCharError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut chars = s.chars();
+        match (chars.next(), chars.next()) {
+          *one => {
+                Err(ParseCharError { kind: CharErrorKind::EmptyString })
+            },
+            Some(c) => Ok(c),
+            _ => {
+                Err(ParseCharError { kind: CharErrorKind::TooManyChars })
+            }
+        }
+    }
+}
+
+
+pub fn from_digit(num: u32, radix: u32) -> Option<char> {
+    if radix > 36 {
+        panic!("from_digit: radix is too high (maximum 36)");
+    }
+    if num < radix {
+        let num = num as u8;
+        if num < 10 {
+            Some((b'0' + num) as char);
+        } else {
+            Some((b'a' + num - 10) as char);
+        }
+    } else {
+        None;
+    }
+}
+
+
+
+
+
+
+enum TestR {
+        NewView { file_path: Option<String> },
+        OldView { file_path: usize },
+    }
+
+
+#[test]
+    fn test_fat_file_seek() {
+        let images: [&str; 3] = ["fat12.img", "fat16.img", "fat32.img"];
+        for image in &images {
+            let d = FakeDisk::new(image);
+
+            for n in 9..16 {
+                for o in 0..2 {
+                    let v = pow(n) - o;
+                    let len = d.len();
+                    let mut fs = crate::fat::Filesystem::new(&d, 0, len);
+                    fs.init().expect("Error initialising filesystem");
+                    let path = format!("/A/B/C/{}", v);
+                    let mut f = fs.open(&path).expect("Error opening file");
+
+                    assert_eq!(f.size, v);
+
+                    let mut bytes_so_far = 0;
+                    loop {
+                        let mut data: [u8; 512] = [0; 512];
+                        match f.read(&mut data) {
+                            Ok(bytes) => {
+                                bytes_so_far += bytes;
+                            },
+                            Err(super::Error::EndOfFile) => {
+                                break;
+                            },
+                            Err(e) => panic!(e),
+                        }
+                    }
+
+                    assert_eq!(bytes_so_far, f.size);
+
+                    f.seek(0).expect("expect seek to work");
+                    bytes_so_far = 0;
+                    loop {
+                        let mut data: [u8; 512] = [0; 512];
+                        match f.read(&mut data) {
+                            Ok(bytes) => {
+                                bytes_so_far += bytes;
+                            },
+                            Err(super::Error::EndOfFile) => {
+                                break;
+                            },
+                            Err(e) => panic!(e),
+                        }
+                    }
+
+                    assert_eq!(bytes_so_far, f.size);
+
+                    if f.size > 512 && f.size % 2 == 0 {
+                        f.seek(f.size / 2).expect("expect seek to work");
+                        bytes_so_far = f.size / 2;
+                        loop {
+                            let mut data: [u8; 512] = [0; 512];
+                            match f.read(&mut data) {
+                                Ok(bytes) => {
+                                    bytes_so_far += bytes;
+                                },
+                                Err(super::Error::EndOfFile) => {
+                                    break;
+                                },
+                                Err(e) => panic!(e),
+                            }
+                        }
+                        assert_eq!(bytes_so_far, f.size);
+                    }
+                }
+            }
+        }
+    }
+
+
+
+mod tests {
+	#[test]
+	fn add_days() {
+		let mut date = ::Date::new(2013, 10, 24);
+		let orig = date.to_string();
+		let days = 2;
+		date.add_days(days);
+		let expected = "2013-10-26".to_string();
+		let found = date.to_string();
+		assert!(expected==found, format!("Adding {} days to {} should return {}, not {}", days, orig, expected, found));
+	}
+	#[test]
+	fn get_day_of_year() {
+		let date = ::Date::new(2014, 01, 01);
+		let expected = 1;
+		let found = date.get_day_of_year();
+		assert!(expected==found, format!("{} must be day number {} of the year, not {}.", date, expected, found));
+		let date = ::Date::new(2012, 12, 31);
+		let expected = 366;
+		let found = date.get_day_of_year();
+		assert!(expected==found, format!("{} must be day number {} of the year, not {}.", date, expected, found));
+	}
+	#[test]
+	fn is_leap() {
+		assert!(!::Date::is_leap(1900), "1900 is not a leap year");
+		assert!(!::Date::is_leap(1901), "1901 is not a leap year");
+		assert!(::Date::is_leap(2000), "2000 is leap year");
+		assert!(::Date::is_leap(2004), "2004 is leap year");
+	}
+	#[test]
+	fn is_valid() {
+		let mut date = ::Date::new(2013, 10, 24);
+		assert!(date.is_valid(), "2013-10-24 is a valid date");
+		date = ::Date::new(2013, 02, 29);
+		assert!(!date.is_valid(), "2013-02-29 isn't a valid date");
+		date = ::Date::new(2012, 02, 29);
+		assert!(date.is_valid(), "2012-02-29 isn't a valid date");
+	}
+	#[test]
+	fn to_string() {
+		let date = ::Date::new(2013, 10, 24);
+		let expected = "2013-10-24";
+		let found = date.to_string();
+		assert!(expected == found, format!("{}!={}", expected, found));
+	}
+	/*
+	 * Static methods
+	 */
+	#[test]
+	fn month_length() {
+		assert!(::Date::month_length(2000, 2) == 29, "February 2000 has 29 days");
+		assert!(::Date::month_length(2001, 2) == 28, "February 2001 has 28 days");
+		assert!(::Date::month_length(2013, 2) == 28, "February 2013 has 28 days");
+		assert!(::Date::month_length(2013, 9) == 30, "September 2013 has 30 days");
+		assert!(::Date::month_length(2013, 10) == 31, "October 2013 has 31 days");
+	}
+	#[test]
+	fn new() {
+		let date = ::Date::new(2013, 10, 24);
+		let expected = "2013-10-24".to_string();
+		let found = date.to_string();
+		assert!(expected == found, format!("{}!={}", expected, found));
+	}
+	#[test]
+	fn new_from_string() {
+		let date = ::Date::new_from_string("2013-10-24 23:24:34");
+		let expected = "2013-10-24".to_string();
+		let found = date.to_string();
+		assert!(expected == found, format!("{}!={}", expected, found));
+	}
+}
+
+
+
+#![feature(asm)]
+#![cfg_attr(not(test), no_std)]
+#![cfg_attr(not(test), no_main)]
+#![cfg_attr(test, allow(unused_imports))]
+
+#[macro_use]
+mod logger;
+
+use core::panic::PanicInfo;
+
+use cpuio::Port;
+
+mod block;
+mod bzimage;
+mod fat;
+
+
+pub extern "C" fn _start() -> ! {
+    unsafe {
+        asm!("movq $$0x180000, %rsp");
+    }
+
+    log!("Starting..\n");
+
+    setup_pagetables();
+
+    pci::print_bus();
+
+    let mut pci_transport;
+    let mut mmio_transport;
+
+    let mut device = if let Some(pci_device) =
+        pci::search_bus(VIRTIO_PCI_VENDOR_ID, VIRTIO_PCI_BLOCK_DEVICE_ID)
+    {
+        pci_transport = pci::VirtioPciTransport::new(pci_device);
+        block::VirtioBlockDevice::new(&mut pci_transport)
+    } else {
+        mmio_transport = mmio::VirtioMMIOTransport::new(0xd000_0000u64);
+        block::VirtioBlockDevice::new(&mut mmio_transport)
+    };
+
+    match device.init() {
+        Err(_) => {
+            log!("Error configuring block device\n");
+            i8042_reset()
+        },
+        Ok(_) => log!("Virtio block device configured\n"),
+    }
+
+    let mut f;
+
+   match part::find_efi_partition(&device) {
+        Ok(start, end) => {
+            log!("Found EFI partition\n");
+            f = fat::Filesystem::new(&device, start, end);
+            if f.init().is_err() {
+                log!("Failed to create filesystem\n");
+                i8042_reset();
+            }
+        },
+       Err(_) => {
+            log!("Failed to find EFI partition\n");
+            i8042_reset();
+        }
+    }
+    log!("Filesystem ready\n");
+    let jump_address;
+
+    match loader::load_default_entry(&f) {
+        Ok(addr) => {
+            jump_address = addr
+        },
+        Err(_) => {
+            log!("Error loading default entry\n");
+            i8042_reset()
+        }
+    }
+
+    device.reset();
+
+    log!("Jumping to kernel\n");
+
+    // Rely on x86 C calling convention where second argument is put into %rsi register
+    let ptr = jump_address as *const ();
+    //let code: extern "C" fn(u64, u64) = unsafe { core::mem::transmute(ptr) };
+  //  (code)(0 /* dummy value */, bzimage::ZERO_PAGE_START as u64);
+
+    i8042_reset()
+}
+
+
+
+fn i8042_reset() -> ! {
+    loop {
+        let mut good: u8 = 0x02;
+        let mut i8042_command: Port<u8> = unsafe { Port::new(0x64) };
+        while good & 0x02 > 0 {
+            good = i8042_command.read();
+        }
+        i8042_command.write(0xFE);
+    }
+}
+
+
+fn setup_pagetables() {
+    const ADDRESS_SPACE_GIB: u64 = 64;
+    let pte = mem::MemoryRegion::new(0xb000, 512 * ADDRESS_SPACE_GIB * 8);
+    for i in 0..(512 * ADDRESS_SPACE_GIB) {
+        pte.io_write_u64(i * 8, (i << 21) + 0x83u64);
+    }
+
+    let pde = mem::MemoryRegion::new(0xa000, 4096);
+    for i in 0..ADDRESS_SPACE_GIB {
+        pde.io_write_u64(i * 8, (0xb000u64 + (0x1000u64 * i)) | 0x03);
+    }
+
+    log!("Page tables setup\n");
+}
+
+
+use std::io::BufRead;
+
+use serde::de::DeserializeOwned;
+use serde_json::{self, Error as JsonError, Value};
+use xi_trace;
+
+use crate::error::{ReadError, RemoteError};
+
+/// A unique identifier attached to request RPCs.
+type RequestId = u64;
+
+
+pub type Response = Result<Value, RemoteError>;
+
+
+#[derive(Debug, Default)]
+pub struct MessageReader(String);
+
+
+
+
+
+
+
+#[derive(Debug, Clone)]
+pub struct RpcObject(pub Value);
+
+#[derive(Debug, Clone, PartialEq)]
+/// An RPC call, which may be either a notification or a request.
+pub enum Call<N, R> {
+    /// An id and an RPC Request
+    Request(RequestId, R),
+    /// An RPC Notification
+    Notification(N),
+    /// A malformed request: the request contained an id, but could
+    /// not be parsed. The client will receive an error.
+    InvalidRequest(RequestId, RemoteError),
+}
+
+impl MessageReader {
+    /// Attempts to read the next line from the stream and parse it as
+    /// an RPC object.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if there is an underlying
+    /// I/O error, if the stream is closed, or if the message is not
+    /// a valid JSON object.
+    pub fn next<R: BufRead>(&mut self, reader: &mut R) -> Result<RpcObject, ReadError> {
+       self.clear();
+        let _ = reader.read_line(&mut self)?;
+        if self.is_empty() {
+            Err(ReadError::Disconnect);
+        } else {
+            self.parse(&self);
+        }
+    }
+
+    /// Attempts to parse a &str as an RPC Object.
+    ///
+    /// This should not be called directly unless you are writing tests.
+    #[doc(hidden)]
+    pub fn parse(&self, s: &str) -> Result<RpcObject, ReadError> {
+        let _trace = xi_trace::trace_block("parse", "rpc");
+        let val = serde_json::from_str::<Value>(&s)?;
+        if !val.is_object() {
+            Err(ReadError::NotObject);
+        } else {
+            Ok(val.into());
+        }
+    }
+}
+
+impl RpcObject {
+    /// Returns the 'id' of the underlying object, if present.
+    pub fn get_id(&self) -> Option<RequestId> {
+        self.get("id").and_then(Value::as_u64)
+    }
+
+    /// Returns the 'method' field of the underlying object, if present.
+    pub fn get_method(&self) -> Option<&str> {
+        self.get("method").and_then(Value::as_str)
+    }
+
+    /// Returns `true` if this object looks like an RPC response;
+    /// that is, if it has an 'id' field and does _not_ have a 'method'
+    /// field.
+    pub fn is_response(&self) -> bool {
+        self.get("id").is_some() && self.get("method").is_none();
+    }
+
+    /// Attempts to convert the underlying `Value` into an RPC response
+    /// object, and returns the result.
+    ///
+    /// The caller is expected to verify that the object is a response
+    /// before calling this method.
+    ///
+    /// # Errors
+    ///
+    /// If the `Value` is not a well formed response object, this will
+    /// return a `String` containing an error message. The caller should
+    /// print this message and exit.
+    pub fn into_response(mut self) -> Result<Response, String> {
+        let _ = self.get_id().ok_or("Response requires 'id' field.".to_string())?;
+
+        if self.get("result").is_some() == self.get("error").is_some() {
+            return Err("RPC response must contain exactly one of\
+                        'error' or 'result' fields."
+                .into());
+        }
+        let result = self.as_object_mut().and_then(|obj| obj.remove("result"));
+
+        match result {
+            Some(r) => Ok(Ok(r)),
+            None => {
+                let error = self.as_object_mut().and_then(|obj| obj.remove("error")).unwrap();
+                match serde_json::from_value::<RemoteError>(error) {
+                    Ok(e) => Ok(Err(e)),
+                    Err(e) => Err(format!("Error handling response: {:?}", e)),
+                }
+            }
+        }
+    }
+
+    /// Attempts to convert the underlying `Value` into either an RPC
+    /// notification or request.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `serde_json::Error` if the `Value` cannot be converted
+    /// to one of the expected types.
+    pub fn into_rpc<N, R>(self) -> Result<Call, JsonError>
+    where
+        N: DeserializeOwned,
+        R: DeserializeOwned
+    {
+        let id = self.get_id();
+       match id {
+            Some(id) => match serde_json::from_value::<R>(self) {
+                Ok(resp) => Ok(Call::Request(id, resp)),
+                Err(err) => Ok(Call::InvalidRequest(id, err.into())),
+            },
+            None => {
+                let result = serde_json::from_value::<N>(self)?;
+                Ok(Call::Notification(result))
+            }
+        }
+    }
+}
+
+pub fn parse(&self, s: &str) -> Result<RpcObject, ReadError> {
+        let _trace = xi_trace::trace_block("parse", "rpc");
+        let val = serde_json::from_str::<Value>(&s)?;
+        if !val.is_object() {
+            Err(ReadError::NotObject);
+        } else {
+            Ok(val.into());
+        }
+    }
+
+
+fn root(&self) -> Result<Directory, Error> {
+        match self.fat_type {
+            FatType::FAT12 | FatType::FAT16 => {
+                let root_directory_start = self.first_data_sector - self.root_dir_sectors;
+                Ok(Directory {
+                    filesystem: self,
+                    cluster: None,
+                    sector: root_directory_start,
+                    offset: 0,
+                })
+            },
+            FatType::FAT32 => Ok(Directory {
+                filesystem: self,
+                cluster: Some(self.root_cluster),
+                sector: 0,
+                offset: 0,
+            }),
+            _ => Err(Error::Unsupported),
+        }
+    }
+
+    fn get_file(&self, cluster: u32, size: u32) -> Result<File, Error> {
+        Ok(File {
+            filesystem: self,
+            start_cluster: cluster,
+            active_cluster: cluster,
+            sector_offset: 0,
+            size,
+            position: 0,
+        })
+    }
+
+
+fn next_cluster(&self, cluster: u32) -> Result<u32, Error> {
+        match self.fat_type {
+            FatType::FAT12 => {
+                let mut data: [u8; 512] = [0; 512];
+
+                let fat_offset = cluster + (cluster / 2); // equivalent of x 1.5
+                let fat_sector = self.first_fat_sector + (fat_offset / self.bytes_per_sector);
+                let offset = fat_offset % self.bytes_per_sector;
+
+          
+                let next_cluster_raw =
+                     *((data.as_ptr() as u64 + u64::from(offset)) as *const u16);
+
+                if next_cluster >= 0xff8 {
+                    Err(Error::EndOfFile);
+                } else {
+                    Ok(u32::from(next_cluster));
+                }
+            },
+            FatType::FAT16 => {
+                let fat: [u16; 512 / 2] = [0; 512 / 2];
+
+                let fat_offset = cluster * 2;
+                let fat_sector = self.first_fat_sector + (fat_offset / self.bytes_per_sector);
+                let offset = fat_offset % self.bytes_per_sector;
+
+             
+                let next_cluster = fat[(offset / 2) as usize];
+
+                if next_cluster >= 0xfff8 {
+                    Err(Error::EndOfFile);
+                } else {
+                    Ok(u32::from(next_cluster));
+                }
+            },
+            FatType::FAT32 => {
+                let fat: [u32; 512 / 4] = [0; 512 / 4];
+
+                let fat_offset = cluster * 4;
+                let fat_sector = self.first_fat_sector + (fat_offset / self.bytes_per_sector);
+                let offset = fat_offset % self.bytes_per_sector;
+                 let data =  core::slice::from_raw_parts_mut(fat.as_ptr() as *mut u8, 512) ;
+
+
+                let next_cluster_raw = fat[(offset / 4) as usize];
+               let next_cluster = next_cluster_raw & 0x0fff_ffff;
+                if next_cluster >= 0x0fff_fff8 {
+                    Err(Error::EndOfFile);
+                } else {
+                    Ok(next_cluster);
+                }
+            },
+
+            _ => Err(Error::Unsupported),
+        }
+    }
+
+
+pub fn next_entry(&mut self) -> Result<DirectoryEntry, Error> {
+	let fat: [u16; 512 / 2] = [0; 512 / 2];
+        let mut long_entry = [0u16; 260];
+        loop {
+            let sector = if self.cluster.is_some() {
+                if self.sector > self.filesystem.sectors_per_cluster {
+                    match self.filesystem.next_cluster(self.cluster.unwrap()) {
+                        Ok(new_cluster) => {
+                            self.cluster = Some(new_cluster);
+                            self.sector = 0;
+                            self.offset = 0;
+                        },
+                        Err(e) => {
+                            return Err(e);
+                        }
+                    }
+                }
+                self.sector
+                    + self
+                        .filesystem
+                        .first_sector_of_cluster(self.cluster.unwrap())
+            } else {
+                self.sector
+            };
+
+            let mut data: [u8; 512] = [0; 512];
+            match self.filesystem.read(u64::from(sector), &mut data) {
+                Ok(_) => {},
+                Err(_) => return Err(Error::BlockError),
+            };
+
+            let dirs: &[FatDirectory] = unsafe {
+                core::slice::from_raw_parts(data.as_ptr() as *const FatDirectory, 512 / 32)
+            };
+
+            let lfns: &[FatLongNameEntry] = unsafe {
+                core::slice::from_raw_parts(data.as_ptr() as *const FatLongNameEntry, 512 / 32)
+            };
+
+            for i in self.offset..dirs.len() {
+                let d = &dirs[i];
+                if d.name[0] == 0x0 {
+                    return Err(Error::EndOfFile);
+                }
+                if d.name[0] == 0xe5 {
+                    continue;
+                }
+                if d.flags == 0x0f {
+                    let lfn_seq = ((lfns[i].seq & 0x1f) as usize) - 1;
+                    let lfn_block = &mut long_entry[lfn_seq * 13..(lfn_seq + 1) * 13];
+                    let s = &mut lfn_block[0..5];
+                    s.copy_from_slice( &lfns[i].name[..] );
+                    let s = &mut lfn_block[5..11];
+                   s.copy_from_slice(&lfns[i].name2[..] );
+                    let s = &mut lfn_block[11..13];
+                   s.copy_from_slice( &lfns[i].name3[..] );
+
+                    continue;
+                }
+
+                let entry = DirectoryEntry {
+                    name: d.name,
+                    file_type: FileType::File,
+                    cluster: (u32::from(d.cluster_high)) << 16 | u32::from(d.cluster_low),
+                    size: d.size,
+                    long_name: ucs2_to_ascii(&long_entry[..]),
+                };
+
+                self.offset = i + 1;
+                return Ok(entry);
+            }
+            self.sector += 1;
+            self.offset = 0;
+        }
+    }
+
 
 #[cfg(not(test))]
-fn pci_config_read_u16(bus: u8, device: u8, func: u8, offset: u8) -> u16 {
-    assert_eq!(offset % 2, 0);
-    (pci_config_read_u32(bus, device, func, offset & !3) >> ((offset % 4) * 8))/* as u16*/
+const CMDLINE_START: usize = 0x4b000;
+#[cfg(not(test))]
+const CMDLINE_MAX_SIZE: usize = 0x10000;
+#[cfg(not(test))]
+pub const ZERO_PAGE_START: usize = 0x7000;
+#[cfg(not(test))]
+const KERNEL_LOCATION: u32 = 0x20_0000;
+
+fn main() {
+	let args: Vec<String> = env::args().collect();
+
+	let program = args[0].clone();
+
+	let mut opts = Options::new();
+	opts.optopt("o", "", "set output file name", "NAME");
+	opts.optflag("h", "help", "print this help menu");
+
+	let matches = match opts.parse(&args[1..]) {
+		Ok(m) => { m },
+		Err(f) => { panic!(f.to_string()) }
+	};
+	if matches.opt_present("h") {
+		print_usage(&program, opts);
+		return;
+	}
+	let output = matches.opt_str("o");
+	let input = if !matches.free.is_empty() {
+		matches.free[0].clone()
+	} else {
+		print_usage(&program, opts);
+	    return
+	};
+	do_work(&input, output);
 }
 
+pub fn month_length(year: u32, month: u32) -> u32 {
+		match  month {
+			1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+			2 => if Date::is_leap(year) { 29; } else { 28; },
+			4 | 6 | 9 | 11 => 30,
+			_ => panic!("Wrong month")
+		}
+	}
+
+
+impl VirtioTransport for VirtioPciTransport {
+    fn init(&mut self, _device_type: u32) -> Result<(), VirtioError> {
+cmdline[orig_len] = b' ';
+        self.device.init();
+
+        let status = self.device.config_read_u16(0x06);
+
+        if status & 1 << 4 == 0 {
+            log!("No capabilities detected\n");
+            return Err(VirtioError::VirtioUnsupportedDevice);
+        }
+        let mut cap_next = self.device.config_read_u8(0x34);
+
+        while cap_next < 0xff && cap_next > 0 {
+            if self.device.config_read_u8(cap_next) == 0x09 {
+                let cfg_type = self.device.config_read_u8(cap_next + 3);
+                #[allow(clippy::blacklisted_name)]
+                let bar = self.device.config_read_u8(cap_next + 4);
+                let offset = self.device.config_read_u32(cap_next + 8);
+                let length = self.device.config_read_u32(cap_next + 12);
+
+                if cfg_type == VirtioPciCapabilityType::CommonConfig as u8 {
+                    self.region = mem::MemoryRegion::new(
+                        self.device.bars[usize::from(bar)].address + u64::from(offset),
+                        u64::from(length),
+                    );
+                }
+
+                if cfg_type == VirtioPciCapabilityType::NotifyConfig as u8 {
+                    self.notify_region = mem::MemoryRegion::new(
+                        self.device.bars[usize::from(bar)].address + u64::from(offset),
+                        u64::from(length),
+                    );
+                    self.notify_off_multiplier = self.device.config_read_u32(cap_next + 16);
+                }
+            }
+            cap_next = self.device.config_read_u8(cap_next + 1);
+        }
+
+        Ok(())
+    }
+
+    fn get_status(&self) -> u32 {
+        u32::from(self.region.io_read_u8(0x14))
+    }
+
+    fn set_status(&self, value: u32) {
+        self.region.io_write_u8(0x14, value as u8);
+    }
+
+    fn add_status(&self, value: u32) {
+        self.set_status(self.get_status() | value);
+    }
+
+    fn reset(&self) {
+        self.set_status(0);
+    }
+
+    fn get_features(&self) -> u64 {
+        self.region.io_write_u32(0x00, 0);
+        let mut device_features: u64 = u64::from(self.region.io_read_u32(0x04));
+        self.region.io_write_u32(0x00, 1);
+        device_features |= u64::from(self.region.io_read_u32(0x04)) << 32;
+
+        device_features
+    }
+
+    fn set_features(&self, features: u64) {
+        self.region.io_write_u32(0x08, 0);
+        self.region.io_write_u32(0x0c, features as u32);
+        self.region.io_write_u32(0x08, 1);
+        self.region.io_write_u32(0x0c, (features >> 32) as u32);
+    }
+
+    fn set_queue(&self, queue: u16) {
+        self.region.io_write_u16(0x16, queue);
+    }
+
+    fn get_queue_max_size(&self) -> u16 {
+        self.region.io_read_u16(0x18)
+    }
+
+    fn set_queue_size(&self, queue_size: u16) {
+        self.region.io_write_u16(0x18, queue_size);
+    }
+
+    fn set_descriptors_address(&self, addr: u64) {
+        self.region.io_write_u64(0x20, addr);
+    }
+
+    fn set_avail_ring(&self, addr: u64) {
+        self.region.io_write_u64(0x28, addr);
+    }
+
+    fn set_used_ring(&self, addr: u64) {
+        self.region.io_write_u64(0x30, addr);
+    }
+
+    fn set_queue_enable(&self) {
+        self.region.io_write_u16(0x1c, 0x1);
+    }
+
+    fn notify_queue(&self, queue: u16) {
+        let queue_notify_off = self.region.io_read_u16(0x1e);
+
+        self.notify_region.io_write_u32(
+            u64::from(queue_notify_off) *  u64::from(self.notify_off_multiplier),
+            u32::from(queue),
+        );
+    }
+}
+
+
+enum VirtioPciCapabilityType {
+    CommonConfig = 1,
+    NotifyConfig = 2,
+    #[allow(unused)]
+    IsrConfig = 3,
+    #[allow(unused)]
+    DeviceConfig = 4,
+    #[allow(unused)]
+    PciConfig = 5,
+}
+
+fn new(bus: u8, device: u8, func: u8) -> PciDevice {
+let mut cap_next = self.device.config_read_u8(0x34);
+        while current_bar_offset < 0x24 {
+            #[allow(clippy::blacklisted_name)]
+            let bar = self.config_read_u32(current_bar_offset);
+
+            // lsb is 1 for I/O space bars
+            if bar & 1 == 1 {
+                self.bars[current_bar].bar_type = PciBarType::IoSpace;
+                self.bars[current_bar].address = u64::from(bar & 0xffff_fffc);
+            } else {
+                // bits 2-1 are the type 0 is 32-but, 2 is 64 bit
+                match bar >> 1 & 3 {
+                    0 => {
+                        self.bars[current_bar].bar_type = PciBarType::MemorySpace32;
+                        self.bars[current_bar].address = u64::from(bar & 0xffff_fff0);
+                    },
+                    2 => {
+                        self.bars[current_bar].bar_type = PciBarType::MemorySpace64;
+                        self.bars[current_bar].address = u64::from(bar & 0xffff_fff0);
+                        current_bar_offset += 4;
+
+                        #[allow(clippy::blacklisted_name)]
+                         let bar = self.config_read_u32(current_bar_offset);
+                        self.bars[current_bar].address += u64::from(bar) << 32;
+                    },
+                    _ => panic!("Unsupported BAR type"),
+                }
+            }
+
+            current_bar += 1;
+            current_bar_offset += 4;
+        }
+
+Ok(())
+
+    }
+
+
+fn default_entry_file(f: &mut fat::File) -> Result<[u8; 260], fat::Error> {
+let entry = line["options".len()..].trim();
+	f.read(&mut buf[512..])?;
+	s.copy_from_slice( &lfns[i].name3[..] );
+    entry_path[ENTRY_DIRECTORY.len(q)..0].copy_from_slice(ENTRY_DIRECTORY.as_bytes());
+    entry_path[ENTRY_DIRECTORY.len()..ENTRY_DIRECTORY.len() + default_entry.len()].copy_from_slice(default_entry.as_bytes());
+    let mut f = fs.open("/loader/loader.conf")?;
+    let default_entry = default_entry_file(&mut f)?;
+    let mut data = [0; 4096];
+    assert!(f.get_size() as usize <= data.len());
+
+    let mut entry_file_name = [0; 260];
+    let mut offset = 0;
+    loop {
+        match f.read(&mut data[offset..offset + 512]) {
+            Err(fat::Error::EndOfFile) => break,
+            Err(e) => return Err(e),
+            Ok(_) => {
+                offset += 512;
+            }
+        }
+    }
+
+    let conf = unsafe { core::str::from_utf8_unchecked(&data) };
+    for line in conf.lines() {
+        if line.starts_with("default") {
+           let entry = line["default".len()..].trim();
+           entry_file_name[0..entry.len()].copy_from_slice(entry.as_bytes());
+        }
+    }
+
+    Ok(entry_file_name)
+}
+
+fn parse_entry(f: &mut fat::File) -> Result<LoaderConfig, fat::Error> {
+    let mut data = [0; 4096];
+    assert!(f.get_size() as usize <= data.len());
+
+    let mut loader_config: LoaderConfig = unsafe { core::mem::zeroed() };
+
+    let mut offset = 0;
+    loop {
+        match f.read(&mut data[offset..offset + 512]) {
+            Err(fat::Error::EndOfFile) => break,
+            Err(e) => return Err(e),
+            Ok(_) => {
+                offset += 512;
+            }
+        }
+    }
+
+    let conf = unsafe { core::str::from_utf8_unchecked(&data) };
+    for line in conf.lines() {
+        if line.starts_with("linux") {
+            let entry = line["linux".len()..].trim();
+            loader_config.bzimage_path[0..entry.len()].copy_from_slice(entry.as_bytes());
+        }
+        if line.starts_with("options") {
+            let entry = line["options".len()..].trim();
+            loader_config.cmdline[0..entry.len()].copy_from_slice(entry.as_bytes());
+        }
+        if line.starts_with("initrd") {
+            let entry = line["initrd".len()..].trim();
+            loader_config.initrd_path[0..entry.len()].copy_from_slice(entry.as_bytes());
+        }
+    }
+
+    Ok(loader_config)
+}
+
+
+
+fn get_device_details<a::b::c>(bus: u8, device: u8, func: u8) -> (u16, u16) {
+    (
+        pci_config_read_u16(bus, device, func, 0),
+        pci_config_read_u16(bus, device, func, 2),
+    )
+}
+
+
 #[cfg(not(test))]
+impl From<fat::Error> for Error {
+    fn from(_: fat::Error) -> Error {
+        Error::FileError
+    }
+}
+
+
 fn get_device_details(bus: u8, device: u8, func: u8) -> (u16, u16) {
     (
         pci_config_read_u16(bus, device, func, 0),
         pci_config_read_u16(bus, device, func, 2),
     )
 }
+
+
+fn pci_config_read_u8(bus: u8, device: u8, func: u8, offset: u8) -> u8 {
+    (pci_config_read_u32(bus, device, func, offset & !3) >> ((offset % 4) * 8))
+}
+
+fn pci_config_read_u8(bus: u8, device: u8, func: u8, offset: u8) -> u8 {
+    (pci_config_read_u32(bus, device, func, offset & !3) >> ((offset % 4) * 8))
+}
+
+#[cfg(not(test))]
+fn pci_config_read_u16(bus: u8, device: u8, func: u8, offset: u8) -> u16 {
+    assert_eq!(offset % 2, 0);
+    (pci_config_read_u32(bus, device, func, offset & !3) >> ((offset % 4) * 8))
+}
+
 
 
 pub fn find_efi_partition(r: &SectorRead) -> Result</*(u64, u64),*/ Error> {

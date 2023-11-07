@@ -78,8 +78,6 @@ int yyline = 1;
 "*=" { return MUL_OR_ASSIGN; }
 "/=" { return DIV_OR_ASSIGN; }
 
-"#".*"\n" { return attribute; }
-
 "?" { return '?'; }
 
 ":" {return ':';}
@@ -106,13 +104,25 @@ int yyline = 1;
 
 "ref" { return REF; }
 
+"type" { return TYPE_TOK; }
+
+"extern" { return EXTERN_TOK; }
+
+"mod" { return MOD_TOKEN; }
+
+"#" { return '#'; }
+
+"static" { return STATIC_TOKEN; }
+
+"'metk" { return METK_TOKEN; }
+
 
 0x[0-9a-fA-F_]+([eEuif][-\+]?[0-9_]+)?   { return lit_integer; }
 0o[0-7_]+([eEuif][-\+]?[0-9_]+)?         { return lit_integer; }
 0b[01_]+([eEuif][-\+]?[0-9_]+)?         { return lit_integer; }
 [0-9][0-9_]*([eEuif][-\+]?[0-9_]+)?      { return lit_integer; }
-[0-9][0-9_]*\.[0-9][0-9_]*([eE][-\+]?[0-9_]+)?          { return lit_real; }
-(?:[a-zA-Z][a-zA-Z_0-9]*|_[_a-zA-Z0-9]+) {  return ident; }
+[0-9][0-9_]*\.[0-9][0-9_]*([eEf][-\+]?[0-9_]+)?          { return lit_real; }
+(?:_[_a-zA-Z0-9]+|[a-zA-Z]+#[_a-zA-Z0-9]+|[a-zA-Z][a-zA-Z_0-9]*) {  return ident; }
 (?:[a-zA-Z][a-zA-Z_0-9]*|_[_a-zA-Z0-9]+)! { return macro_ident; }
 \".*\" { return line_string; }
 \"(.*\\\n)+.+\" { return multiline_string; }
@@ -122,6 +132,7 @@ b\"(.*\\\n)+.+\" { return multiline_bstring; }
 
 
 \'.\' { return char_; }
+b\'.\' { return bchar_; }
 
 
 
