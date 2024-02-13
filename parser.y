@@ -201,11 +201,12 @@ struct_fields:
 	| struct_fields ',' struct_field 
 ;
 
-//struct Electron;
-//struct Colorss(i32, i32, i32);
-
 struct_field:
 	maybe_attribute maybe_pub ident ':' type_or_generic_for_struct
+;
+
+type_or_generic_for_struct:
+	maybe_mut_for_struct struct_type_ident maybe_generic
 ;
 
 maybe_attribute:
@@ -213,9 +214,6 @@ maybe_attribute:
 	| attribute
 ;
 
-type_or_generic_for_struct:
-	maybe_mut_for_struct struct_type_ident maybe_generic
-;
 
 struct_type_ident:
 	struct_type_ident_token resolution_operator struct_type_ident
@@ -325,12 +323,15 @@ generic_symbol:
 use_sequence:
 	USE use_left ';'
 	| USE use_left AS use_right ';'
-	//| USE use_left '{' use_tuple_seq '}' ';'
 ;
 
 use_left:
 	use_left_token resolution_operator use_left
 	| use_left_token 
+;
+
+use_right:
+	ident
 ;
 
 use_left_token:
@@ -348,9 +349,6 @@ use_args:
 	| ident AS ident ',' use_args
 ;
 
-use_right:
-	ident
-;
 
 function:
 	FN ident maybe_generic '(' maybe_params ')' maybe_return_type  '{' statements '}'
@@ -476,9 +474,7 @@ where_types_sequence_ident:
 	| fn_params_type_ident_token ':' function_call RIGHT_ARROW func_return_type
 ;
 
-/*
-{ x + 1 }
-*/
+
 return_expression:
 	statements expr
 	| statements RETURN
@@ -528,6 +524,10 @@ match_inside_statements:
 	| match_inside_statements ',' match_inside_statement 
 ;	
 
+match_ident:
+	expr_or_unsafe_expr
+;
+
 match_inside_statement:
 	expr_or_unsafe_expr MATCH_ARROW rvalue
 	| '_' MATCH_ARROW rvalue
@@ -539,9 +539,6 @@ match_inside_statement:
 	| '_' MATCH_ARROW CONTINUE
 ;
 
-match_ident:
-	expr_or_unsafe_expr
-;
 
 
 return_token_expr:
@@ -690,30 +687,18 @@ assignment_type:
 	| ident_sequence generic
 ;
 
-		
+
 if_statement:
-	if_expr_statement
-	| if_let_statement
-;
+	IF condition '{' statements '}' 
+	| IF condition '{' statements '}' ELSE '{' statements '}' 
+	| IF condition '{' statements '}' ELSE if_statement 
 
-if_let_statement:
-	IF assignment_without_semicolon '{' statements '}' 
-	| IF assignment_without_semicolon '{' statements '}' ELSE '{' statements '}' 
-	| IF assignment_without_semicolon '{' statements '}' ELSE if_statement
+	| IF condition '{' statements '}' ELSE '{' return_expression '}'
+	| IF condition '{' return_expression '}' ELSE '{' statements '}'
 
-	| IF assignment_without_semicolon '{' return_expression '}' 
-	| IF assignment_without_semicolon '{' return_expression '}' ELSE '{' return_expression '}' 
-	| IF assignment_without_semicolon '{' return_expression '}' ELSE if_statement
-;
-
-if_expr_statement:
-	IF expr_or_unsafe_expr '{' statements '}' 
-	| IF expr_or_unsafe_expr '{' statements '}' ELSE '{' statements '}' 
-	| IF expr_or_unsafe_expr '{' statements '}' ELSE if_statement 
-
-	| IF expr_or_unsafe_expr '{' return_expression '}' 
-	| IF expr_or_unsafe_expr '{' return_expression '}' ELSE '{' return_expression '}' 
-	| IF expr_or_unsafe_expr '{' return_expression '}' ELSE if_statement 
+	| IF condition '{' return_expression '}' 
+	| IF condition '{' return_expression '}' ELSE '{' return_expression '}' 
+	| IF condition '{' return_expression '}' ELSE if_statement 
 ;	
 
 metk_statement:
@@ -787,7 +772,6 @@ expr_binary_operation:
 	| expr_binary_operation DOTDOT '=' '*' expr_binary_operation
 	| '(' expr_binary_operation ')'
 	| '!' expr_binary_operation
-	//| UNSAFE '{' return_expression '}'
 	| borrow
 	| expr_binary_operation AS maybe_mut_for_fn_params type_for_as_seq
 	| expr_token
@@ -931,8 +915,6 @@ closure:
 	| '|' closure_seq '|' RIGHT_ARROW maybe_rvalue_prefix lvalue_outside_brackets '{' inside_brackets_types_rvalue ',' '}'
 	| '|' closure_seq '|' RIGHT_ARROW raw_type '{' statements '}'
 ;
-
-//maybe_assignment_type
 
 closure_seq:
 	closure_seq_token

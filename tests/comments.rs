@@ -1,3 +1,46 @@
+fn m(){}
+
+fn main() {
+match coin {
+        Coin::Penny => {
+            println!("Lucky penny!");
+            1
+        },
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter => 25,
+};
+
+    let args = Docopt::new(USAGE)
+                      .and_then(|dopt| dopt.parse())
+                      .unwrap_or_else(|e| e.exit());
+
+    if args.get_bool("--version") {
+        println!("Hjson CLI {}", VERSION);
+        return;
+    }
+
+    let input = args.get_str("<input>");
+    let mut buffer = String::new();
+
+    if input != "" {
+        let mut f = File::open(&Path::new(input)).unwrap();
+        f.read_to_string(&mut buffer).unwrap();
+    } else {
+        io::stdin().read_to_string(&mut buffer).unwrap();
+    }
+
+    let data : Value = serde_hjson::from_str(&buffer).unwrap();
+
+    if args.get_bool("-j") {
+        println!("{}", serde_json::to_string_pretty(&data).unwrap());
+    } else if args.get_bool("-c") {
+        println!("{}", serde_json::to_string(&data).unwrap());
+    } else {
+        println!("{}", serde_hjson::to_string(&data).unwrap());
+    }
+}
+
 extern fn english(){
 	let thing1: u8 = 89.0 as u8;
 	let thing2: f32 = thing1 as f32 + 10.5;
